@@ -1,0 +1,19 @@
+<html>
+    <body>
+        <canvas id = "canvas" height="600px" width="600px" style="border: 2px solid black"></canvas>
+        <br/>
+        <div id="mydiv" style="font-family: 'Courier New', Courier, monospace; font-size: 200%">
+
+        </div>
+<script type="module">
+    import { runCanvas,test } from "./Libs/runCanvas.js";
+    /*runCanvas("canvas", function(canvas,u) {
+        let context=canvas.getContext("2d");
+        context.clearRect(0,0,600,600);
+        context.fillRect( u *500,100,50,50);
+    });*/
+
+    window.onload = test;
+</script>
+    </body>
+</html>
