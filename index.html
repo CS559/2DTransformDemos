@@ -1,17 +1,15 @@
 <html>
     <body>
+        <h1>Scale along 45 degree axis Example</h1>
+        <p>Click the checkbox to run the animation</p>
+        <p>Or use the slider to move along the animation</p>
+    
         <canvas id = "canvas" height="600px" width="600px" style="border: 2px solid black"></canvas>
         <br/>
-        <div id="mydiv" style="font-family: 'Courier New', Courier, monospace; font-size: 200%">
-
+        <div id="mydiv" style="font-family: 'Courier New', Courier, monospace; font-size: 150%">
         </div>
 <script type="module">
-    import { runCanvas,test } from "./Libs/runCanvas.js";
-    /*runCanvas("canvas", function(canvas,u) {
-        let context=canvas.getContext("2d");
-        context.clearRect(0,0,600,600);
-        context.fillRect( u *500,100,50,50);
-    });*/
+    import { test } from "./scaleRotate.js";
 
     window.onload = test;
 </script>
