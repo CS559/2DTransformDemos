@@ -1,0 +1,49 @@
+<html>
+    <header>
+            <link rel="stylesheet" href="Libs/style559.css">
+    </header>
+    <body >
+        <h1>Non-Uniform Scale along 45 degree axis Example</h1>
+        <p>Click the checkbox to run the animation</p>
+        <p>Or use the slider to move along the animation</p>
+        <p>This example shows how to scale along a 45 degree axius 
+            (since Canvas has angles going clockwise, this is down and two the right).
+            I am stretching the square along this axis - the axis (up and right) is 
+            not stretched.
+        </p>
+        <p>
+            The code to do this is:
+            <code><pre>
+                context.rotate(Math.PI/4);
+                context.scale(2,1);
+                context.rotate(-Math.PI/4);
+            </pre>
+            </code>
+            But understanding why this works is tricky. This animation should help.
+        </p>
+        <p>
+            As the animation runs, you'll see the transformations act on the coordinate systems.
+            The trick is that in the last transformation, the rotation is happening in a distorted
+            coordinate system (it was stretched), so it doesn't look like a rotation.
+        </p>
+        <p>
+            In class, I drew this in a simplified way - it was too hard to show the rotation in 
+            stretched space. This will hopefully make things clearer. Although, 
+            things involving non-uniform scales are tricky no matter what.
+        </p>
+        <p>
+            You can use "view source" to see the code, but the code of interest is
+            made complicated by the animation infrastructure.
+        </p>
+    
+        <canvas id = "canvas" height="400px" width="400px"></canvas>
+        <br/>
+        <div id="mydiv" style="font-family: 'Courier New', Courier, monospace; font-size: 150%">
+        </div>
+<script type="module">
+    import { test } from "./scaleRotate.js";
+
+    window.onload = test;
+</script>
+    </body>
+</html>
