@@ -7,7 +7,8 @@ import { RunCanvas } from "./Libs/runCanvas.js";
 let test1 = [
     ["rotate",45],
     ["scale",2,1],
-    ["rotate",-45]
+    ["rotate",-45],
+    ["fillrect",-10,-10,20,20]
 ];
 
 function degToRad(angle) {
@@ -63,6 +64,11 @@ function drawCsys(context,color="#7F0000",drawBlock=undefined) {
     context.restore();
 }
 
+function stylize(amt,htmlLine) {
+    let style = (amt <= 0) ? "c-zero" : ((amt < 1) ? "c-act" : "c-one");
+    return (`<span class="${style}">${htmlLine}</span><br/>`);
+}
+
 /**
  * 
  * @param {CanvasRenderingContext2D} context 
@@ -83,16 +89,32 @@ function doTransform(context, transformList, param, direction) {
             let x = t[1] * amt;
             let y = t[2] * amt;
             context.translate(x,y);
-            html += `context.translate(${x.toFixed(1)},${y.toFixed(1)});<br/>`;
+            html += stylize(amt,`context.translate(${x.toFixed(1)},${y.toFixed(1)});`);
         } else if (command=="r") {
             let a = t[1] * amt;
             context.rotate(degToRad(a));
-            html += `context.rotate(${a.toFixed(1)}); <br/>`;
+            html += stylize(amt,`context.rotate(${a.toFixed(1)});`);
         } else if (command=="s") {
             let x = amt * t[1] + (1-amt) * 1;
             let y = amt * t[2] + (1-amt) * 1;
             context.scale(x,y);
-            html += `context.scale(${x.toFixed(1)},${y.toFixed(1)});<br/>`;
+            html += stylize(amt,`context.scale(${x.toFixed(1)},${y.toFixed(1)});`);
+        } else if (command=="f") {
+            let color = t.length > 5 ? t[5] : "blue";
+            if (amt > 0) {
+                context.save();
+                context.fillStyle = color;
+                context.beginPath();
+                context.moveTo(t[1],     t[2]);
+                context.lineTo(t[1],     t[2]+t[4]);
+                context.lineTo(t[1]+t[3],t[2]+t[4]);
+                context.lineTo(t[1]+t[3],t[2]);
+                context.closePath();
+                context.fill();
+                context.restore();
+            }
+            html += stylize(amt,`context.fillStyle="${color}"`);
+            html += stylize(amt,`context.fillRect(${t[1]},${t[2]},${t[3]},${t[4]});`);
         } else {
             console.log(`Bad transform ${t}`);
         }
@@ -114,6 +136,7 @@ function makeDraw(canvas,transformList, div)
 
         context.save();
         context.translate(canvas.width/2,canvas.height/2);
+        context.scale(2,2);
         context.save();
 
         let html = doTransform(context,transformList,param);
@@ -126,11 +149,25 @@ function makeDraw(canvas,transformList, div)
     };
 }
 
-export function test ()
+export function test (name="mycanvas",transforms=test1)
 {
-    let mycanvas = /** @type {HTMLCanvasElement} */ (document.getElementById("canvas"));
+    // let mycanvas = /** @type {HTMLCanvasElement} */ (document.getElementById("canvas"));
+
+    let mycanvas = document.createElement("canvas");
+    mycanvas.width = 400;
+    mycanvas.height = 400;
+    mycanvas.id = name;
+    document.getElementsByTagName("body")[0].appendChild(mycanvas);
+
+    let div = document.createElement("div");
+    div.style.cssText = "font-family: 'Courier New', Courier, monospace; font-size: 120%";
+    document.getElementsByTagName("body")[0].appendChild(div);
+
+    let br = document.createElement("br");
+    document.getElementsByTagName("body")[0].appendChild(br);
     
-    let rc = new RunCanvas("canvas",makeDraw(mycanvas,test1,document.getElementById("mydiv")));
-    rc.setupSlider(0,3,0.02);
+    let rc = new RunCanvas(name,makeDraw(mycanvas,transforms,div));
+    rc.noloop = true;
+    rc.setupSlider(0,transforms.length,0.02);
     rc.setValue(0);
 }

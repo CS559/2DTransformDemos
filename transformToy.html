@@ -1,16 +1,35 @@
 <html>
+    <style>
+        .c-zero {
+            color : lightgray;
+        }
+        .c-act {
+            color : red;
+        }
+        .c-one {
+            color : black;
+        }
+    </style>
     <header>
             <link rel="stylesheet" href="Libs/style559.css">
     </header>
     <body >
-        <canvas id = "canvas" height="400px" width="400px"></canvas>
-        <br/>
-        <div id="mydiv" style="font-family: 'Courier New', Courier, monospace; font-size: 120%">
-        </div>
-<script type="module">
-    import { test } from "./transformToy.js";
 
-    window.onload = test;
-</script>
+    <script type="module">
+        import { test } from "./transformToy.js";
+
+        window.onload = function() {
+            test("c1");
+            test("c2", [
+                ["fillRect",0,0,20,10,"purple"],
+                ["translate",20,0],
+                ["rotate",45],
+                ["fillRect",0,0,20,10,"blue"],
+                ["translate",20,0],
+                ["rotate",45],
+                ["fillRect",0,0,10,10,"green"]                
+            ])
+        }
+    </script>
     </body>
 </html>
