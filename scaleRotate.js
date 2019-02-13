@@ -1,4 +1,7 @@
-import {runCanvas} from "./Libs/runCanvas.js";
+/*jshint esversion: 6 */
+// @ts-check
+
+import {RunCanvas} from "./Libs/runCanvas.js";
 
 export function test() {
     let mycanvas = /** @type {HTMLCanvasElement} */ (document.getElementById("canvas"));
@@ -15,7 +18,7 @@ export function test() {
          * 4 - un-rotated coordinate system
          * 5 - draw square
          */
-        let u = param * 6;
+        let u = param;
         function drawCsys(color="#7F0000",drawBlock=undefined) {
                 context.save();
                 context.fillStyle = "#FFFFFF80"; // color + "10";
@@ -88,18 +91,9 @@ export function test() {
         let mydiv=document.getElementById("mydiv");
         mydiv.innerHTML = html;
 
-        /*
-        context.save();
-        context.rotate(Math.PI/4);
-        drawCsys("#600060");
-        context.scale(2,1);
-        drawCsys("#006000")
-        context.rotate(-Math.PI/4);
-        drawCsys("#FF0000","#FF000080");
-        context.restore();
-        */
        context.restore();
     } // drawExp
-    runCanvas("canvas",drawExp,0,true);
-    // drawExp(mycanvas,.4);
- }
+    let rc = new RunCanvas("canvas",drawExp,true);
+    rc.setValue(0);
+    rc.setupSlider(0,6,0.02);
+  }
