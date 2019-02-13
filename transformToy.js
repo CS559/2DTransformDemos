@@ -139,6 +139,8 @@ function makeDraw(canvas,transformList, div)
         context.scale(2,2);
         context.save();
 
+        drawCsys(context,"black");
+
         let html = doTransform(context,transformList,param);
         drawCsys(context);
 
