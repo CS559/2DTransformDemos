@@ -41,7 +41,7 @@ export function test() {
                     context.moveTo(50, x*10);
                     context.lineTo(-50,x*10);
                 }
-                context.lineWidth = .5;
+                context.lineWidth = 0.5;
                 context.stroke();
                 context.lineWidth = 1;
                 context.beginPath();
