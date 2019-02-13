@@ -35,6 +35,7 @@ export class RunCanvas {
         this.range.id = canvasName + "-slider";
         this.range.setAttribute("type","range");
         this.range.style.width = String(this.canvas.width - 50 - 20);
+        // give default values for range
         this.setupSlider(0,1,0.01);
 
         this.text = document.createElement("input");
@@ -109,7 +110,9 @@ export class RunCanvas {
 }
 
 /**
- * simple entry point - give it the name of a canvas
+ * simple entry point - give it the name of a canvas, and it guesses the rest
+ * but it also loses access to all the parameters
+ * 
  * @param {string} canvasName 
  * @param {function(HTMLCanvasElement, Number) : any} [drawFunc]
  */ 
