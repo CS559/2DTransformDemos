@@ -151,14 +151,20 @@ function makeDraw(canvas,transformList, div)
     };
 }
 
-export function test (name="mycanvas",transforms=test1)
+export function test (title,transforms=test1)
 {
     // let mycanvas = /** @type {HTMLCanvasElement} */ (document.getElementById("canvas"));
+
+    let canvasName = performance.now().toString();
+
+    let heading = document.createElement("h2");
+    heading.innerText = title;
+    document.getElementsByTagName("body")[0].appendChild(heading);
 
     let mycanvas = document.createElement("canvas");
     mycanvas.width = 400;
     mycanvas.height = 400;
-    mycanvas.id = name;
+    mycanvas.id = canvasName;
     document.getElementsByTagName("body")[0].appendChild(mycanvas);
 
     let div = document.createElement("div");
@@ -168,7 +174,7 @@ export function test (name="mycanvas",transforms=test1)
     let br = document.createElement("br");
     document.getElementsByTagName("body")[0].appendChild(br);
     
-    let rc = new RunCanvas(name,makeDraw(mycanvas,transforms,div));
+    let rc = new RunCanvas(canvasName,makeDraw(mycanvas,transforms,div));
     rc.noloop = true;
     rc.setupSlider(0,transforms.length,0.02);
     rc.setValue(0);

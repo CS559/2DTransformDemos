@@ -21,6 +21,12 @@ function insertAfter(el, referenceNode) {
  * the main thing is implemented as a class in case you want access to everything
  */
 export class RunCanvas {
+    /**
+     * 
+     * @param {string} canvasName 
+     * @param {function} drawFunc 
+     * @param {boolean} noLoop 
+     */
     constructor(canvasName,drawFunc,noLoop=false) {
         this.canvas = /** @type {HTMLCanvasElement} */ (document.getElementById(canvasName));
         this.canvasName = canvasName;

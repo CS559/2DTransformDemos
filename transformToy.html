@@ -19,8 +19,9 @@
         import { test } from "./transformToy.js";
 
         window.onload = function() {
-            test("c1");
-            test("c2", [
+            test("Scale about a 45 degrees Axis");
+            test("Bend an arm 45 degrees at Elbow and Wrist",
+            [
                 ["fillRect",0,0,20,10,"purple"],
                 ["translate",20,0],
                 ["rotate",45],
@@ -29,7 +30,8 @@
                 ["rotate",45],
                 ["fillRect",0,0,10,10,"green"]                
             ]);
-            test("c3", [
+            test("Rotate about object center",
+            [
                 ["translate",30,30],
                 ["rotate",45],
                 ["translate",-30,-30],
