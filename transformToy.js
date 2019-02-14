@@ -64,10 +64,6 @@ function drawCsys(context,color="#7F0000",drawBlock=undefined) {
     context.restore();
 }
 
-function stylize(amt,htmlLine) {
-    let style = (amt <= 0) ? "c-zero" : ((amt < 1) ? "c-act" : "c-one");
-    return (`<span class="${style}">${htmlLine}</span><br/>`);
-}
 
 /**
  * 
@@ -76,14 +72,24 @@ function stylize(amt,htmlLine) {
  * @param {Number} param 
  * @param {*} [direction]
  */
-function doTransform(context, transformList, param, direction) {
+function doTransform(context, transformList, param, direction=1) {
     let html = "";
+
+    
 
     transformList.forEach(function(t,i) {
         let command = t[0][0];
-        let amt = (i>param) ? 0 : Math.min(1,param-i); 
+        let amt = (direction >= 0) ? 
+        (i>param) ? 0 : Math.min(1,param-i) : 
+        ((i+1)<param) ? 0 : Math.min(1,(i+1)-param) ;  
 
         // console.log(`param ${param} i ${i} amt ${amt} `)
+
+        /* made a local function so it has access to direction and list */
+        function stylize(amt,htmlLine) {
+            let style = (amt <= 0) ? "c-zero" : ((amt < 1) ? "c-act" : "c-one");
+            return (`<span class="${style}">${htmlLine}</span><br/>`);
+        }        
 
         if (command == "t") {
             let x = t[1] * amt;
@@ -128,9 +134,9 @@ function doTransform(context, transformList, param, direction) {
  * @param {Array<Array>} transformList 
  * @param {HTMLElement} div 
  */
-function makeDraw(canvas,transformList, div)
+function makeDraw(canvas,transformList, div, dirTog)
 {
-    return function draw(canvas,param) {
+    function draw(canvas,param) {
         let context = canvas.getContext("2d");
         context.clearRect(0,0,canvas.width,canvas.height);
 
@@ -141,14 +147,15 @@ function makeDraw(canvas,transformList, div)
 
         drawCsys(context,"black");
 
-        let html = doTransform(context,transformList,param);
+        let html = doTransform(context,transformList,param,dirTog.checked ? -1 : 1);
         drawCsys(context);
 
         context.restore();
         context.restore();
 
         div.innerHTML = html;
-    };
+    }
+    return draw;
 }
 
 export function test (title,transforms=test1)
@@ -167,15 +174,31 @@ export function test (title,transforms=test1)
     mycanvas.id = canvasName;
     document.getElementsByTagName("body")[0].appendChild(mycanvas);
 
+    let dirTog = document.createElement("input");
+    dirTog.setAttribute("type","checkbox");
+    dirTog.id = canvasName + "-dt";
+    document.getElementsByTagName("body")[0].appendChild(dirTog);
+
+    let dirLabel = document.createElement("label");
+    dirLabel.setAttribute("for",dirTog.id);
+    dirLabel.innerText = "Reverse";
+    document.getElementsByTagName("body")[0].appendChild(dirLabel);
+   
+
     let div = document.createElement("div");
     div.style.cssText = "font-family: 'Courier New', Courier, monospace; font-size: 120%";
     document.getElementsByTagName("body")[0].appendChild(div);
 
-    let br = document.createElement("br");
-    document.getElementsByTagName("body")[0].appendChild(br);
-    
-    let rc = new RunCanvas(canvasName,makeDraw(mycanvas,transforms,div));
+    let md = makeDraw(mycanvas,transforms,div,dirTog);
+    let rc = new RunCanvas(canvasName,md);
     rc.noloop = true;
     rc.setupSlider(0,transforms.length,0.02);
     rc.setValue(0);
+
+    dirTog.onchange = function() {
+        md(mycanvas,Number(rc.range.value));
+    };
+
+    let br = document.createElement("br");
+    document.getElementsByTagName("body")[0].appendChild(br);
 }

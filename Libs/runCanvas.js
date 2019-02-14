@@ -109,7 +109,7 @@ export class RunCanvas {
         this.setValue(value);
         if (this.runbutton.checked) {
             let self=this;
-            window.requestAnimationFrame(function () {self.advance()} );
+            window.requestAnimationFrame(function () {self.advance();} );
         }
     }
 
