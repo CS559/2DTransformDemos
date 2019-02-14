@@ -19,8 +19,28 @@
         import { test } from "./transformToy.js";
 
         window.onload = function() {
-            test("Scale about a 45 degrees Axis");
-            test("Bend an arm 45 degrees at Elbow and Wrist",
+            test("Scale about a 45 degrees Axis",
+            [
+                ["rotate",45],
+                ["scale",2,1],
+                ["rotate",-45],
+                ["fillrect",-10,-10,20,20,"#F0000080"]
+            ]);
+            test("Scale about a 45 degrees Axis (w/original square)",
+            [
+                ["fillrect",-10,-10,20,20,"#800000"],
+                ["rotate",45],
+                ["scale",2,1],
+                ["rotate",-45],
+                ["fillrect",-10,-10,20,20,"#F0000080"]
+            ]);
+            test("Scale and then rotate",
+            [
+                ["scale",2,1],
+                ["rotate",45],
+                ["fillRect",-10,-10,20,20]
+            ]);
+           test("Bend an arm 45 degrees at Elbow and Wrist",
             [
                 ["fillRect",0,0,20,10,"purple"],
                 ["translate",20,0],
