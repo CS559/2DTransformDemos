@@ -1,13 +1,6 @@
 /*jshint esversion: 6 */
 // @ts-check
 
-// Things to add
-// Transform Toy. Someone should clean up the transform toy code (both for in class, but also to give to students)
-// - show the overall program on the side (not just from reveal)
-// - (hard, maybe not worth it) allow for creating alternative examples
-// - create other illustrations of how the coordinate systems work
-// - add save/restore to the things it can do (might be there)
-
 // a premade function to construct a running canvas, 
 // please read runCanvas.js for more details 
 import { RunCanvas } from "./Libs/runCanvas.js";
@@ -194,18 +187,18 @@ function makeDraw(canvas, transformList, div, dirTog = undefined, csTog = undefi
     return draw;
 }
 
-function makeSelect(values, where, initial) {
-    let select = document.createElement("select");
-    values.forEach(function(ch) {
-        let opt = document.createElement("option");
-        opt.value = ch;
-        opt.text = ch;
-        select.add(opt);
-        if (initial) select.value = initial;
-    });
-    where.parentNode.insertBefore(select, where.nextSibling);
-    return select;
-}
+// function makeSelect(values, where, initial) {
+//     let select = document.createElement("select");
+//     values.forEach(function(ch) {
+//         let opt = document.createElement("option");
+//         opt.value = ch;
+//         opt.text = ch;
+//         select.add(opt);
+//         if (initial) select.value = initial;
+//     });
+//     where.parentNode.insertBefore(select, where.nextSibling);
+//     return select;
+// }
 
 /**
  * Create a transformation example
@@ -335,7 +328,7 @@ export function createExample(title, transforms = undefined) {
             mdFinal(rightCanvas, transforms.length);
         };
     } else {
-        
+        // TODO: Enable customization.
     }
     
 }
