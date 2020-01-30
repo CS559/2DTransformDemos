@@ -194,13 +194,26 @@ function makeDraw(canvas, transformList, div, dirTog = undefined, csTog = undefi
     return draw;
 }
 
+function makeSelect(values, where, initial) {
+    let select = document.createElement("select");
+    values.forEach(function(ch) {
+        let opt = document.createElement("option");
+        opt.value = ch;
+        opt.text = ch;
+        select.add(opt);
+        if (initial) select.value = initial;
+    });
+    where.parentNode.insertBefore(select, where.nextSibling);
+    return select;
+}
+
 /**
  * Create a transformation example
  * 
  * @param {string} title 
  * @param {Array} transforms 
  */
-export function createExample(title, transforms = test1) {
+export function createExample(title, transforms = undefined) {
     // make sure each canvas has a different name?
     let canvasName = performance.now().toString();
     // console.log(canvasName);
@@ -262,26 +275,6 @@ export function createExample(title, transforms = test1) {
         "font-size: 120%; padding-top: 5px";
     document.getElementById(leftDiv.id).appendChild(leftCodeDiv);
 
-    // set up the left part
-    let md = makeDraw(leftCanvas, transforms, leftCodeDiv, dirTog);
-    let rc = new RunCanvas(canvasName, md);
-    rc.noloop = true;
-    rc.setupSlider(0, transforms.length, 0.02);
-    rc.setValue(0);
-
-    dirTog.onchange = function () {
-        md(leftCanvas, Number(rc.range.value));
-    };
-
-    // set up the right part if the checkbox is checked
-    resultTog.onchange = function () {
-        if (resultTog.checked) {
-            document.getElementById(rightDiv.id).style.display = "block";
-        } else {
-            document.getElementById(rightDiv.id).style.display = "none";
-        }
-    };
-
     // right part, including a canvas, a code block
     let rightDiv = document.createElement("div");
     rightDiv.id = canvasName + "-rightDiv";
@@ -296,7 +289,6 @@ export function createExample(title, transforms = test1) {
     // checkbox and label for showing the final coordinate system
     let csTog = document.createElement("input");
     csTog.setAttribute("type", "checkbox");
-    csTog.setAttribute("checked", "true");
     csTog.id = canvasName + "-cst";
     document.getElementById(rightDiv.id).appendChild(csTog);
 
@@ -307,17 +299,43 @@ export function createExample(title, transforms = test1) {
 
     let rightCodeDiv = document.createElement("div");
     rightCodeDiv.style.cssText = "font-family: 'Courier New', Courier, monospace; " +
-        "font-size: 120%; padding-top: 5px";
+        "font-size: 120%; padding-top: 53px";
     document.getElementById(rightDiv.id).appendChild(rightCodeDiv);
-
-    let mdFinal = makeDraw(rightCanvas, transforms, rightCodeDiv, undefined, csTog);
-    mdFinal(rightCanvas, transforms.length);
-
-    csTog.onchange = function() {
-        mdFinal(rightCanvas, transforms.length);
-    };
-
+    
     // line breaker to prepare for the next example
     let br = document.createElement("br");
     document.getElementsByTagName("body")[0].appendChild(br);
+
+    if (transforms) {
+        // set up the left part
+        let md = makeDraw(leftCanvas, transforms, leftCodeDiv, dirTog);
+        let rc = new RunCanvas(canvasName, md);
+        rc.noloop = true;
+        rc.setupSlider(0, transforms.length, 0.02);
+        rc.setValue(0);
+
+        dirTog.onchange = function () {
+            md(leftCanvas, Number(rc.range.value));
+        };
+
+        // set up the right part if the checkbox is checked
+        resultTog.onchange = function () {
+            if (resultTog.checked) {
+                document.getElementById(rightDiv.id).style.display = "block";
+            } else {
+                document.getElementById(rightDiv.id).style.display = "none";
+            }
+        };
+
+        // set up the right part
+        let mdFinal = makeDraw(rightCanvas, transforms, rightCodeDiv, undefined, csTog);
+        mdFinal(rightCanvas, transforms.length);
+
+        csTog.onchange = function() {
+            mdFinal(rightCanvas, transforms.length);
+        };
+    } else {
+        
+    }
+    
 }
