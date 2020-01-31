@@ -68,7 +68,7 @@ function drawCsys(context, color = "#7F0000", drawBlock = undefined) {
 
     // draw the two axes in bold lines 
     context.save();
-    context.lineWidth = 1;
+    context.lineWidth = 3;
     context.beginPath();
     context.moveTo(0, -50);
     context.lineTo(0, 50);
@@ -187,18 +187,59 @@ function makeDraw(canvas, transformList, div, dirTog = undefined, csTog = undefi
     return draw;
 }
 
-// function makeSelect(values, where, initial) {
-//     let select = document.createElement("select");
-//     values.forEach(function(ch) {
-//         let opt = document.createElement("option");
-//         opt.value = ch;
-//         opt.text = ch;
-//         select.add(opt);
-//         if (initial) select.value = initial;
-//     });
-//     where.parentNode.insertBefore(select, where.nextSibling);
-//     return select;
-// }
+// useful utility function for creating HTML
+/**
+ * https://plainjs.com/javascript/manipulation/insert-an-element-after-or-before-another-32/
+ * @param {HTMLElement} el 
+ * @param {HTMLElement} referenceNode 
+ */
+function insertAfter(el, referenceNode) {
+    referenceNode.parentNode.insertBefore(el, referenceNode.nextSibling);
+}
+
+function makeSelect(values, where, initial) {
+    let select = document.createElement("select");
+    values.forEach(function(ch) {
+        let opt = document.createElement("option");
+        opt.value = ch;
+        opt.text = ch;
+        select.add(opt);
+        if (initial) select.value = initial;
+    });
+    where.appendChild(select);
+    return select;
+}
+
+/**
+ * @param {string} name
+ * @param {number} min
+ * @param {number} max
+ * @param {number} value
+ * @param {number} step
+ */
+function createSlider(name, min, max, value, step) {
+    let sliderDiv = document.createElement("div");
+
+    let slider = document.createElement("input");
+    slider.setAttribute("type","range");
+    slider.style.width = String(300);
+    slider.setAttribute("min",String(min));
+    slider.setAttribute("max",String(max));
+    slider.setAttribute("value",String(value));
+    slider.setAttribute("step",String(step));
+    sliderDiv.appendChild(slider);
+
+    let sliderLabel = document.createElement("label");
+    sliderLabel.setAttribute("for", slider.id);
+    sliderLabel.innerText = name + slider.value;
+    sliderDiv.appendChild(sliderLabel);
+
+    slider.oninput = function() {
+        sliderLabel.innerText = name + String(slider.value);
+    };
+
+    return sliderDiv;
+}
 
 /**
  * Create a transformation example
@@ -299,12 +340,15 @@ export function createExample(title, transforms = undefined) {
     let br = document.createElement("br");
     document.getElementsByTagName("body")[0].appendChild(br);
 
-    if (transforms) {
+    /**
+     * @param {Array<Array>} transformsToDo
+     */
+    function run(transformsToDo) {
         // set up the left part
-        let md = makeDraw(leftCanvas, transforms, leftCodeDiv, dirTog);
+        let md = makeDraw(leftCanvas, transformsToDo, leftCodeDiv, dirTog);
         let rc = new RunCanvas(canvasName, md);
         rc.noloop = true;
-        rc.setupSlider(0, transforms.length, 0.02);
+        rc.setupSlider(0, transformsToDo.length, 0.02);
         rc.setValue(0);
 
         dirTog.onchange = function () {
@@ -321,14 +365,169 @@ export function createExample(title, transforms = undefined) {
         };
 
         // set up the right part
-        let mdFinal = makeDraw(rightCanvas, transforms, rightCodeDiv, undefined, csTog);
-        mdFinal(rightCanvas, transforms.length);
+        let mdFinal = makeDraw(rightCanvas, transformsToDo, rightCodeDiv, undefined, csTog);
+        mdFinal(rightCanvas, transformsToDo.length);
 
         csTog.onchange = function() {
-            mdFinal(rightCanvas, transforms.length);
+            mdFinal(rightCanvas, transformsToDo.length);
         };
-    } else {
-        // TODO: Enable customization.
     }
-    
+
+    function reset() {
+        leftCodeDiv.innerHTML = "";
+        rightCodeDiv.innerHTML = "";
+        leftCanvas.getContext("2d").clearRect(0, 0, leftCanvas.width, leftCanvas.height);
+        rightCanvas.getContext("2d").clearRect(0, 0, rightCanvas.width, rightCanvas.height);
+        document.getElementById(canvasName + "-slider").style.display = "none";
+        document.getElementById(canvasName + "-text").style.display = "none";
+        document.getElementById(canvasName + "-run").style.display = "none";
+        document.getElementById(canvasName + "-br").style.display = "none";
+    }
+
+    if (transforms) {
+        run(transforms);
+    } else {
+        let customTransformList = [];
+
+        let customDiv = document.createElement("div");
+        customDiv.id = canvasName + "-custom";
+        insertAfter(customDiv, resultLabel);
+
+        let select = makeSelect(["Please select one transform", "translate", "scale", "rotate", "fillRect"], customDiv);
+        select.id = canvasName + "-select";
+
+        let extraBr = document.createElement("br");
+        insertAfter(extraBr, resultLabel);
+        // insertAfter(extraBr, select);
+
+        let addButton = document.createElement("button");
+        addButton.id = canvasName + "-addB";
+        addButton.innerHTML = "Add";
+        customDiv.appendChild(addButton);
+
+        let runButton = document.createElement("button");
+        runButton.id = canvasName + "-runB";
+        runButton.innerHTML = "Run";
+        customDiv.appendChild(runButton);
+
+        let resetButton = document.createElement("button");
+        resetButton.id = canvasName + "-resetB";
+        resetButton.innerHTML = "Reset";
+        customDiv.appendChild(resetButton);
+
+        rightCodeDiv.style.paddingTop = "74px";
+
+        let customCommand;
+        let running;
+
+        addButton.onclick = function() {
+            if (customCommand) {
+                let customTransform = [];
+                let parameters = "";
+                customTransform.push(customCommand.name);
+                customCommand.sliders.forEach(
+                    /**
+                     * @param {HTMLDivElement} sd
+                     * @param {Number} i
+                     */
+                    function(sd, i) {
+                        let sdSlider = /** @type {HTMLInputElement} */ (sd.children[0]);
+                        customTransform.push(sdSlider.value);
+                        parameters += (i ? "," : "") + sdSlider.value;
+                    }
+                );
+                customTransformList.push(customTransform);
+                // console.log(customTransform);
+                let htmlLine = "context." + customTransform[0] + "(" + parameters + ");";
+                leftCodeDiv.innerHTML += `<span class="c-one">${htmlLine}</span><br/>`;
+            }
+        };
+
+        runButton.onclick = function() {
+            if (customCommand) {
+                customCommand.sliders.forEach(
+                    /**
+                     * @param {HTMLDivElement} sd
+                     */
+                    function(sd) {
+                        sd.style.display = "none";
+                    }
+                );
+            }
+            select.options[0].selected = true;
+            if (running) {
+                reset();
+            }
+            run(customTransformList);
+            running = true;
+        };
+
+        resetButton.onclick = function() {
+            running = false;
+            reset();
+            customCommand = undefined;
+            customTransformList = [];
+        };
+
+        select.onchange = function() {
+            let command = select.options[select.selectedIndex].text;
+            
+            if (customCommand) {
+                customCommand.sliders.forEach(
+                    /**
+                     * @param {HTMLDivElement} sd
+                     */
+                    function(sd) {
+                        sd.style.display = "none";
+                    }
+                );
+            }
+
+            if (command == "translate") {
+                let translateX = createSlider("translateX: ", -50, 50, 0, 5);
+                translateX.id = canvasName + "-tX";
+
+                let translateY = createSlider("translateY: ", -50, 50, 0, 5);
+                translateY.id = canvasName + "-tY";
+                customCommand = {name: "translate", sliders: [translateX, translateY]};
+            } else if (command == "scale") {
+                let scaleX = createSlider("scaleX: ", 0.2, 3, 0.2, 0.2);
+                scaleX.id = canvasName + "-sX";
+
+                let scaleY = createSlider("scaleY: ", 0.2, 3, 0.2, 0.2);
+                scaleY.id = canvasName + "-sY";
+                customCommand = {name: "scale", sliders: [scaleX, scaleY]};
+            } else if (command == "rotate") {
+                let rotate = createSlider("angle: ", -180, 180, 0, 10);
+                rotate.id = canvasName + "-rotate";
+                customCommand = {name: "rotate", sliders: [rotate]};
+            } else if (command == "fillRect") {
+                let posX = createSlider("posX: ", -50, 50, 0, 10);
+                posX.id = canvasName + "-pX";
+
+                let posY = createSlider("posY: ", -50, 50, 0, 10);
+                posY.id = canvasName + "-pY";
+
+                let sizeX = createSlider("sizeX: ", 0, 100, 0, 10);
+                sizeX.id = canvasName + "-sizeX";
+
+                let sizeY = createSlider("sizeY: ", 0, 100, 0, 10);
+                sizeY.id = canvasName + "-sizeY";
+                customCommand = {name: "fillRect", sliders: [posX, posY, sizeX, sizeY]};
+            } else {
+                customCommand = undefined;
+            }
+
+            if (customCommand) {
+                customCommand.sliders.forEach(
+                    /**
+                     * @param {HTMLDivElement} sd
+                     */
+                    function(sd) {
+                    customDiv.appendChild(sd);
+                    sd.style.display = "block";
+                });
+            }
+        };
+    }
 }
