@@ -197,6 +197,11 @@ function insertAfter(el, referenceNode) {
     referenceNode.parentNode.insertBefore(el, referenceNode.nextSibling);
 }
 
+/**
+ * @param {string[]} values
+ * @param {HTMLDivElement} where
+ * @param {string} [initial]
+ */
 function makeSelect(values, where, initial) {
     let select = document.createElement("select");
     values.forEach(function(ch) {
@@ -247,27 +252,26 @@ function createSlider(name, min, max, value, step) {
  * @param {string} title 
  * @param {Array} transforms 
  */
-export function createExample(title, transforms = undefined) {
-    // make sure each canvas has a different name?
-    let canvasName = performance.now().toString();
-    // console.log(canvasName);
+function createExample(title, transforms = undefined) {
+    // make sure each canvas has a different name
+    let canvasName = title;
 
     // heading
-    let heading = document.createElement("h2");
-    heading.innerText = title;
-    document.getElementsByTagName("body")[0].appendChild(heading);
+    // let heading = document.createElement("h2");
+    // heading.innerText = title;
+    // document.getElementsByTagName("body")[0].appendChild(heading);
 
-    // division to hold these two canvases 
-    let twoCanvasesDiv = document.createElement("div");
-    twoCanvasesDiv.id = canvasName + "-two";
-    twoCanvasesDiv.style.cssText = "display: flex; align-items: flex-start";
-    document.getElementsByTagName("body")[0].appendChild(twoCanvasesDiv);
+    // division to hold the example 
+    let exampleDiv = document.createElement("div");
+    exampleDiv.id = canvasName + "-example";
+    exampleDiv.style.cssText = "display: none; align-items: flex-start";
+    document.getElementsByTagName("body")[0].appendChild(exampleDiv);
 
     // left part, including a canvas, checkboxes, a slider, and a code block
     let leftDiv = document.createElement("div");
     leftDiv.id = canvasName + "-leftDiv";
     leftDiv.style.cssText = "padding-right: 30px";
-    document.getElementById(twoCanvasesDiv.id).appendChild(leftDiv);
+    document.getElementById(exampleDiv.id).appendChild(leftDiv);
 
     let leftCanvas = document.createElement("canvas");
     leftCanvas.width = 400;
@@ -276,6 +280,7 @@ export function createExample(title, transforms = undefined) {
     document.getElementById(leftDiv.id).appendChild(leftCanvas);
 
     let leftBrOne = document.createElement("br");
+    leftBrOne.id = canvasName + "-leftBr1";
     document.getElementById(leftDiv.id).appendChild(leftBrOne);
 
     // checkbox and label for reversion
@@ -290,6 +295,7 @@ export function createExample(title, transforms = undefined) {
     document.getElementById(leftDiv.id).appendChild(dirLabel);
 
     let leftBrTwo = document.createElement("br");
+    leftBrTwo.id = canvasName + "-leftBr2";
     document.getElementById(leftDiv.id).appendChild(leftBrTwo);
 
     // checkbox and label for showing the final result
@@ -312,7 +318,7 @@ export function createExample(title, transforms = undefined) {
     // right part, including a canvas, a code block
     let rightDiv = document.createElement("div");
     rightDiv.id = canvasName + "-rightDiv";
-    document.getElementById(twoCanvasesDiv.id).appendChild(rightDiv);
+    document.getElementById(exampleDiv.id).appendChild(rightDiv);
 
     let rightCanvas = document.createElement("canvas");
     rightCanvas.width = 400;
@@ -337,8 +343,8 @@ export function createExample(title, transforms = undefined) {
     document.getElementById(rightDiv.id).appendChild(rightCodeDiv);
     
     // line breaker to prepare for the next example
-    let br = document.createElement("br");
-    document.getElementsByTagName("body")[0].appendChild(br);
+    // let br = document.createElement("br");
+    // document.getElementsByTagName("body")[0].appendChild(br);
 
     /**
      * @param {Array<Array>} transformsToDo
@@ -373,9 +379,43 @@ export function createExample(title, transforms = undefined) {
         };
     }
 
+    /**
+     * @param {{ sliders: HTMLDivElement[]; }} customCommand
+     */
+    function hideSliders(customCommand) {
+        if (customCommand) {
+            customCommand.sliders.forEach(
+                /**
+                 * @param {HTMLDivElement} sd
+                 */
+                function(sd) {
+                    sd.style.display = "none";
+                }
+            );
+        }
+    }
+
+    function hideRunningUIs() {
+        dirTog.style.display = "none";
+        dirLabel.style.display = "none";
+        resultTog.style.display = "none";
+        resultLabel.style.display = "none";
+        csTog.style.display = "none";
+        csLabel.style.display = "none";
+        leftBrTwo.style.display = "none";
+    }
+
+    function showRunningUIs() {
+        dirTog.style.display = "inline";
+        dirLabel.style.display = "inline";
+        resultTog.style.display = "inline";
+        resultLabel.style.display = "inline";
+        csTog.style.display = "inline";
+        csLabel.style.display = "inline";
+        leftBrTwo.style.display = "inline";
+    }
+
     function reset() {
-        leftCodeDiv.innerHTML = "";
-        rightCodeDiv.innerHTML = "";
         leftCanvas.getContext("2d").clearRect(0, 0, leftCanvas.width, leftCanvas.height);
         rightCanvas.getContext("2d").clearRect(0, 0, rightCanvas.width, rightCanvas.height);
         document.getElementById(canvasName + "-slider").style.display = "none";
@@ -387,8 +427,6 @@ export function createExample(title, transforms = undefined) {
     if (transforms) {
         run(transforms);
     } else {
-        let customTransformList = [];
-
         let customDiv = document.createElement("div");
         customDiv.id = canvasName + "-custom";
         insertAfter(customDiv, resultLabel);
@@ -397,6 +435,7 @@ export function createExample(title, transforms = undefined) {
         select.id = canvasName + "-select";
 
         let extraBr = document.createElement("br");
+        extraBr.id = canvasName + "-extraBr";
         insertAfter(extraBr, resultLabel);
         // insertAfter(extraBr, select);
 
@@ -417,6 +456,9 @@ export function createExample(title, transforms = undefined) {
 
         rightCodeDiv.style.paddingTop = "74px";
 
+        hideRunningUIs();
+
+        let customTransformList = [];
         let customCommand;
         let running;
 
@@ -432,7 +474,7 @@ export function createExample(title, transforms = undefined) {
                      */
                     function(sd, i) {
                         let sdSlider = /** @type {HTMLInputElement} */ (sd.children[0]);
-                        customTransform.push(sdSlider.value);
+                        customTransform.push(Number(sdSlider.value));
                         parameters += (i ? "," : "") + sdSlider.value;
                     }
                 );
@@ -444,90 +486,180 @@ export function createExample(title, transforms = undefined) {
         };
 
         runButton.onclick = function() {
-            if (customCommand) {
-                customCommand.sliders.forEach(
-                    /**
-                     * @param {HTMLDivElement} sd
-                     */
-                    function(sd) {
-                        sd.style.display = "none";
-                    }
-                );
-            }
+            // hide the sliders and 
+            hideSliders(customCommand);
+            // reset the drop down menu
             select.options[0].selected = true;
+            // in case the user keeps clicking run
             if (running) {
+                leftCodeDiv.innerHTML = "";
+                rightCodeDiv.innerHTML = "";
                 reset();
             }
-            run(customTransformList);
-            running = true;
+            // if there is a valid transforamtion list
+            if (customTransformList.length > 0) {
+                run(customTransformList);
+                showRunningUIs(); // show running UIs
+                // in case the user clicks add when an example is running
+                addButton.disabled = true;
+                select.disabled = true;
+                running = true;
+            }
+            // console.log(customTransformList);
         };
 
         resetButton.onclick = function() {
-            running = false;
-            reset();
+            // reset the drop down menu
+            select.options[0].selected = true;
+            // clear the code divisions
+            leftCodeDiv.innerHTML = "";
+            rightCodeDiv.innerHTML = "";
+            // hide the sliders if there are any
+            hideSliders(customCommand);
+            hideRunningUIs();
+            // enable the button
+            addButton.disabled = false;
+            select.disabled = false;
+            // reset these if it is running
+            if (running) {
+                reset();
+                running = false;
+            }
+            // clear the transformation parameters
             customCommand = undefined;
-            customTransformList = [];
+            customTransformList = [];            
         };
 
         select.onchange = function() {
             let command = select.options[select.selectedIndex].text;
-            
-            if (customCommand) {
-                customCommand.sliders.forEach(
-                    /**
-                     * @param {HTMLDivElement} sd
-                     */
-                    function(sd) {
-                        sd.style.display = "none";
-                    }
-                );
-            }
-
+            // hide the sliders if there are any
+            hideSliders(customCommand);
+            // create sliders and transformation command based on the selected option
             if (command == "translate") {
+                // each slider corresponds to a parameter
                 let translateX = createSlider("translateX: ", -50, 50, 0, 5);
                 translateX.id = canvasName + "-tX";
-
                 let translateY = createSlider("translateY: ", -50, 50, 0, 5);
                 translateY.id = canvasName + "-tY";
+                // store the sliders to a custom command
                 customCommand = {name: "translate", sliders: [translateX, translateY]};
             } else if (command == "scale") {
-                let scaleX = createSlider("scaleX: ", 0.2, 3, 0.2, 0.2);
+                let scaleX = createSlider("scaleX: ", 0, 3, 1, 0.5);
                 scaleX.id = canvasName + "-sX";
-
-                let scaleY = createSlider("scaleY: ", 0.2, 3, 0.2, 0.2);
+                let scaleY = createSlider("scaleY: ", 0, 3, 1, 0.5);
                 scaleY.id = canvasName + "-sY";
                 customCommand = {name: "scale", sliders: [scaleX, scaleY]};
             } else if (command == "rotate") {
-                let rotate = createSlider("angle: ", -180, 180, 0, 10);
+                let rotate = createSlider("angle: ", -180, 180, 0, 5);
                 rotate.id = canvasName + "-rotate";
                 customCommand = {name: "rotate", sliders: [rotate]};
             } else if (command == "fillRect") {
                 let posX = createSlider("posX: ", -50, 50, 0, 10);
                 posX.id = canvasName + "-pX";
-
                 let posY = createSlider("posY: ", -50, 50, 0, 10);
                 posY.id = canvasName + "-pY";
-
                 let sizeX = createSlider("sizeX: ", 0, 100, 0, 10);
                 sizeX.id = canvasName + "-sizeX";
-
                 let sizeY = createSlider("sizeY: ", 0, 100, 0, 10);
                 sizeY.id = canvasName + "-sizeY";
                 customCommand = {name: "fillRect", sliders: [posX, posY, sizeX, sizeY]};
             } else {
+                // bad transforamtion command
                 customCommand = undefined;
             }
-
+            // if a valid command, show related sliders
             if (customCommand) {
                 customCommand.sliders.forEach(
                     /**
                      * @param {HTMLDivElement} sd
                      */
                     function(sd) {
-                    customDiv.appendChild(sd);
-                    sd.style.display = "block";
-                });
+                        customDiv.appendChild(sd);
+                        sd.style.display = "block";
+                    }
+                );
             }
         };
     }
+    return exampleDiv;
+}
+
+export function setupDemo() {
+    let headingDiv = document.createElement("div");
+    headingDiv.id = "headingDiv";
+    document.getElementsByTagName("body")[0].appendChild(headingDiv);
+
+    let br = document.createElement("br");
+    document.getElementsByTagName("body")[0].appendChild(br);
+
+    let examples = [
+    {
+        title: "Scale about a 45 degrees Axis", 
+        transformations: 
+        [
+            ["rotate",45],
+            ["scale",2,1],
+            ["rotate",-45],
+            ["fillrect",-10,-10,20,20,"#F0000080"]
+        ]}, {
+        title: "Scale about a 45 degrees Axis (w/original square)",
+        transformations: 
+        [
+            ["fillrect",-10,-10,20,20,"#800000"],
+            ["rotate",45],
+            ["scale",2,1],
+            ["rotate",-45],
+            ["fillrect",-10,-10,20,20,"#F0000080"]
+        ]}, {
+        title: "Scale and then rotate", 
+        transformations: 
+        [
+            ["scale",2,1],
+            ["rotate",45],
+            ["fillRect",-10,-10,20,20]
+        ]}, {
+        title: "Bend an arm 45 degrees at Elbow and Wrist",
+        transformations: 
+        [
+            ["fillRect",0,0,20,10,"purple"],
+            ["translate",20,0],
+            ["rotate",45],
+            ["fillRect",0,0,20,10,"blue"],
+            ["translate",20,0],
+            ["rotate",45],
+            ["fillRect",0,0,10,10,"green"]  
+        ]}, {
+        title: "Rotate about object center", 
+        transformations: 
+        [
+            ["translate",30,30],
+            ["rotate",45],
+            ["translate",-30,-30],
+            ["fillRect",20,20,40,40]
+        ]}, {
+        title: "Your turn to play with it", 
+        }
+    ];
+
+    let titles = ["Please select one example"];
+    let exampleDivs = [];
+    examples.forEach(e => {
+        exampleDivs.push(createExample(e.title, e.transformations));
+        titles.push(e.title);
+    });
+
+    let selectExample = makeSelect(titles, headingDiv);
+    selectExample.id = "exampleSelect";
+
+    let currentExample;
+    selectExample.onchange = function() {
+        if (currentExample) currentExample.style.display = "none";
+        let selectedTitle = selectExample.options[selectExample.selectedIndex].text;
+        exampleDivs.forEach(ed => {
+            if (ed.id == selectedTitle + "-example") {
+                currentExample = ed;
+            }
+        });
+        if (currentExample) currentExample.style.display = "flex";
+    };
 }

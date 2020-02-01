@@ -16,49 +16,9 @@
 
     <body >
     <script type="module">
-        import { createExample } from "./transformToy.js";
+        import { setupDemo } from "./transformToy.js";
 
-        window.onload = function() {
-            createExample("Scale about a 45 degrees Axis",
-            [
-                ["rotate",45],
-                ["scale",2,1],
-                ["rotate",-45],
-                ["fillrect",-10,-10,20,20,"#F0000080"]
-            ]);
-            createExample("Scale about a 45 degrees Axis (w/original square)",
-            [
-                ["fillrect",-10,-10,20,20,"#800000"],
-                ["rotate",45],
-                ["scale",2,1],
-                ["rotate",-45],
-                ["fillrect",-10,-10,20,20,"#F0000080"]
-            ]);
-            createExample("Scale and then rotate",
-            [
-                ["scale",2,1],
-                ["rotate",45],
-                ["fillRect",-10,-10,20,20]
-            ]);
-            createExample("Bend an arm 45 degrees at Elbow and Wrist",
-            [
-                ["fillRect",0,0,20,10,"purple"],
-                ["translate",20,0],
-                ["rotate",45],
-                ["fillRect",0,0,20,10,"blue"],
-                ["translate",20,0],
-                ["rotate",45],
-                ["fillRect",0,0,10,10,"green"]                
-            ]);
-            createExample("Rotate about object center",
-            [
-                ["translate",30,30],
-                ["rotate",45],
-                ["translate",-30,-30],
-                ["fillRect",20,20,40,40]
-            ]);
-            createExample("Your turn to play with it");
-        }
+        window.onload = setupDemo;
     </script>
     </body>
 </html>
