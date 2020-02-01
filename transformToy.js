@@ -77,6 +77,19 @@ function drawCsys(context, color = "#7F0000", drawBlock = undefined) {
     context.stroke();
     context.restore();
 
+    context.save();
+    context.fillStyle = color;
+    context.moveTo(3, 50);
+    context.lineTo(0, 56);
+    context.lineTo(-3, 50);
+    context.closePath();
+    context.moveTo(50, -3);
+    context.lineTo(56, 0);
+    context.lineTo(50, 3);
+    context.closePath();
+    context.fill();
+    context.restore();
+
     context.restore();
 }
 
@@ -159,7 +172,7 @@ function doTransform(context, transformList, param, direction = 1) {
  * @param {HTMLInputElement} dirTog
  * @param {HTMLInputElement} csTog
  */
-function makeDraw(canvas, transformList, div, dirTog = undefined, csTog = undefined) {
+function makeDraw(canvas, transformList, div, dirTog = undefined, orTog = undefined, csTog = undefined) {
     /**
      * @param {HTMLCanvasElement} canvas
      * @param {number} param
@@ -173,7 +186,9 @@ function makeDraw(canvas, transformList, div, dirTog = undefined, csTog = undefi
         context.scale(2, 2);
 
         context.save();
-        drawCsys(context, "black");
+        if (!(orTog && !orTog.checked)) {
+            drawCsys(context, "black");
+        }
         let html = doTransform(context, transformList, param, dirTog ? (dirTog.checked ? -1 : 1) : 1);
         if (!(csTog && !csTog.checked)) {            
             drawCsys(context);
@@ -237,6 +252,7 @@ function createSlider(name, min, max, value, step) {
     let sliderLabel = document.createElement("label");
     sliderLabel.setAttribute("for", slider.id);
     sliderLabel.innerText = name + slider.value;
+    sliderLabel.style.cssText = "margin-left: 10px";
     sliderDiv.appendChild(sliderLabel);
 
     slider.oninput = function() {
@@ -279,36 +295,52 @@ function createExample(title, transforms = undefined) {
     leftCanvas.id = canvasName;
     document.getElementById(leftDiv.id).appendChild(leftCanvas);
 
-    let leftBrOne = document.createElement("br");
-    leftBrOne.id = canvasName + "-leftBr1";
-    document.getElementById(leftDiv.id).appendChild(leftBrOne);
+    let leftPanel = document.createElement("div");
+    leftPanel.id = canvasName + "-leftPanel";
+    document.getElementById(leftDiv.id).appendChild(leftPanel);
 
     // checkbox and label for reversion
     let dirTog = document.createElement("input");
     dirTog.setAttribute("type", "checkbox");
     dirTog.id = canvasName + "-dt";
-    document.getElementById(leftDiv.id).appendChild(dirTog);
+    document.getElementById(leftPanel.id).appendChild(dirTog);
 
     let dirLabel = document.createElement("label");
     dirLabel.setAttribute("for", dirTog.id);
     dirLabel.innerText = "Reverse";
-    document.getElementById(leftDiv.id).appendChild(dirLabel);
+    document.getElementById(leftPanel.id).appendChild(dirLabel);
 
-    let leftBrTwo = document.createElement("br");
-    leftBrTwo.id = canvasName + "-leftBr2";
-    document.getElementById(leftDiv.id).appendChild(leftBrTwo);
+    let leftBrOne = document.createElement("br");
+    leftBrOne.id = canvasName + "-leftBr2";
+    document.getElementById(leftPanel.id).appendChild(leftBrOne);
+
+    // checkbox and label for showing the original coordinate system
+    // let orTogLeft = document.createElement("input");
+    // orTogLeft.setAttribute("type", "checkbox"); 
+    // orTogLeft.setAttribute("checked", "true");
+    // orTogLeft.id = canvasName + "-olt";
+    // document.getElementById(leftPanel.id).appendChild(orTogLeft);
+
+    // let orLabelLeft = document.createElement("label");
+    // orLabelLeft.setAttribute("for", orTogLeft.id);
+    // orLabelLeft.innerText = "Show the original coordinate system";
+    // document.getElementById(leftPanel.id).appendChild(orLabelLeft);
+
+    // let leftBrThree = document.createElement("br");
+    // leftBrThree.id = canvasName + "-leftBr3";
+    // document.getElementById(leftPanel.id).appendChild(leftBrThree);
 
     // checkbox and label for showing the final result
     let resultTog = document.createElement("input");
     resultTog.setAttribute("type", "checkbox");
     resultTog.setAttribute("checked", "true");
     resultTog.id = canvasName + "-rt";
-    document.getElementById(leftDiv.id).appendChild(resultTog);
+    document.getElementById(leftPanel.id).appendChild(resultTog);
 
     let resultLabel = document.createElement("label");
     resultLabel.setAttribute("for", resultTog.id);
     resultLabel.innerText = "Show the final result";
-    document.getElementById(leftDiv.id).appendChild(resultLabel);
+    document.getElementById(leftPanel.id).appendChild(resultLabel);
 
     let leftCodeDiv = document.createElement("div");
     leftCodeDiv.style.cssText = "font-family: 'Courier New', Courier, monospace; " +
@@ -326,25 +358,42 @@ function createExample(title, transforms = undefined) {
     rightCanvas.id = canvasName + "-right";
     document.getElementById(rightDiv.id).appendChild(rightCanvas);
 
-    // checkbox and label for showing the final coordinate system
-    let csTog = document.createElement("input");
-    csTog.setAttribute("type", "checkbox");
-    csTog.id = canvasName + "-cst";
-    document.getElementById(rightDiv.id).appendChild(csTog);
+    let rightPanel = document.createElement("div");
+    rightPanel.id = canvasName + "-rightPanel";
+    rightPanel.style.cssText = "margin-top: 27px";
+    document.getElementById(rightDiv.id).appendChild(rightPanel);
 
-    let csLabel = document.createElement("label");
-    csLabel.setAttribute("for", csTog.id);
-    csLabel.innerText = "Show the final coordinate system";
-    document.getElementById(rightDiv.id).appendChild(csLabel);
+    // checkbox and label for showing the original coordinate system
+    let orTogRight = document.createElement("input");
+    orTogRight.setAttribute("type", "checkbox"); 
+    orTogRight.setAttribute("checked", "true");
+    orTogRight.id = canvasName + "-ot";
+    document.getElementById(rightPanel.id).appendChild(orTogRight);
+
+    let orLabelRight = document.createElement("label");
+    orLabelRight.setAttribute("for", orTogRight.id);
+    orLabelRight.innerText = "Show the original coordinate system";
+    document.getElementById(rightPanel.id).appendChild(orLabelRight);
+
+    let rightBrOne = document.createElement("br");
+    rightBrOne.id = canvasName + "-rightBr1";
+    document.getElementById(rightPanel.id).appendChild(rightBrOne);
+
+    // checkbox and label for showing the final coordinate system
+    let finalTog = document.createElement("input");
+    finalTog.setAttribute("type", "checkbox");
+    finalTog.id = canvasName + "-cst";
+    document.getElementById(rightPanel.id).appendChild(finalTog);
+
+    let finalLabel = document.createElement("label");
+    finalLabel.setAttribute("for", finalTog.id);
+    finalLabel.innerText = "Show the final coordinate system";
+    document.getElementById(rightPanel.id).appendChild(finalLabel);
 
     let rightCodeDiv = document.createElement("div");
     rightCodeDiv.style.cssText = "font-family: 'Courier New', Courier, monospace; " +
-        "font-size: 120%; padding-top: 53px";
+        "font-size: 120%; padding-top: 5px";
     document.getElementById(rightDiv.id).appendChild(rightCodeDiv);
-    
-    // line breaker to prepare for the next example
-    // let br = document.createElement("br");
-    // document.getElementsByTagName("body")[0].appendChild(br);
 
     /**
      * @param {Array<Array>} transformsToDo
@@ -357,12 +406,16 @@ function createExample(title, transforms = undefined) {
         rc.setupSlider(0, transformsToDo.length, 0.02);
         rc.setValue(0);
 
-        dirTog.onchange = function () {
+        // orTogLeft.onchange = function() {
+        //     md(leftCanvas, transformsToDo.length);
+        // };
+
+        dirTog.onchange = function() {
             md(leftCanvas, Number(rc.range.value));
         };
 
         // set up the right part if the checkbox is checked
-        resultTog.onchange = function () {
+        resultTog.onchange = function() {
             if (resultTog.checked) {
                 document.getElementById(rightDiv.id).style.display = "block";
             } else {
@@ -371,10 +424,14 @@ function createExample(title, transforms = undefined) {
         };
 
         // set up the right part
-        let mdFinal = makeDraw(rightCanvas, transformsToDo, rightCodeDiv, undefined, csTog);
+        let mdFinal = makeDraw(rightCanvas, transformsToDo, rightCodeDiv, undefined, orTogRight, finalTog);
         mdFinal(rightCanvas, transformsToDo.length);
 
-        csTog.onchange = function() {
+        finalTog.onchange = function() {
+            mdFinal(rightCanvas, transformsToDo.length);
+        };
+
+        orTogRight.onchange = function() {
             mdFinal(rightCanvas, transformsToDo.length);
         };
     }
@@ -395,26 +452,6 @@ function createExample(title, transforms = undefined) {
         }
     }
 
-    function hideRunningUIs() {
-        dirTog.style.display = "none";
-        dirLabel.style.display = "none";
-        resultTog.style.display = "none";
-        resultLabel.style.display = "none";
-        csTog.style.display = "none";
-        csLabel.style.display = "none";
-        leftBrTwo.style.display = "none";
-    }
-
-    function showRunningUIs() {
-        dirTog.style.display = "inline";
-        dirLabel.style.display = "inline";
-        resultTog.style.display = "inline";
-        resultLabel.style.display = "inline";
-        csTog.style.display = "inline";
-        csLabel.style.display = "inline";
-        leftBrTwo.style.display = "inline";
-    }
-
     function reset() {
         leftCanvas.getContext("2d").clearRect(0, 0, leftCanvas.width, leftCanvas.height);
         rightCanvas.getContext("2d").clearRect(0, 0, rightCanvas.width, rightCanvas.height);
@@ -429,34 +466,34 @@ function createExample(title, transforms = undefined) {
     } else {
         let customDiv = document.createElement("div");
         customDiv.id = canvasName + "-custom";
-        insertAfter(customDiv, resultLabel);
+        insertAfter(customDiv, leftPanel);
 
         let select = makeSelect(["Please select one transform", "translate", "scale", "rotate", "fillRect"], customDiv);
         select.id = canvasName + "-select";
-
-        let extraBr = document.createElement("br");
-        extraBr.id = canvasName + "-extraBr";
-        insertAfter(extraBr, resultLabel);
-        // insertAfter(extraBr, select);
+        select.style.cssText = "margin-bottom: 5px; margin-top: 10px";
 
         let addButton = document.createElement("button");
         addButton.id = canvasName + "-addB";
         addButton.innerHTML = "Add";
+        addButton.style.cssText = "margin-left: 7px";
         customDiv.appendChild(addButton);
 
         let runButton = document.createElement("button");
         runButton.id = canvasName + "-runB";
         runButton.innerHTML = "Run";
+        runButton.style.cssText = "margin-left: 7px";
         customDiv.appendChild(runButton);
 
         let resetButton = document.createElement("button");
         resetButton.id = canvasName + "-resetB";
         resetButton.innerHTML = "Reset";
+        resetButton.style.cssText = "margin-left: 7px";
         customDiv.appendChild(resetButton);
 
-        rightCodeDiv.style.paddingTop = "74px";
+        rightCodeDiv.style.paddingTop = "38px";
 
-        hideRunningUIs();
+        leftPanel.style.display = "none";
+        rightPanel.style.display = "none";
 
         let customTransformList = [];
         let customCommand;
@@ -499,7 +536,8 @@ function createExample(title, transforms = undefined) {
             // if there is a valid transforamtion list
             if (customTransformList.length > 0) {
                 run(customTransformList);
-                showRunningUIs(); // show running UIs
+                leftPanel.style.display = "block"; // show the panels
+                rightPanel.style.display = "block";
                 // in case the user clicks add when an example is running
                 addButton.disabled = true;
                 select.disabled = true;
@@ -516,7 +554,8 @@ function createExample(title, transforms = undefined) {
             rightCodeDiv.innerHTML = "";
             // hide the sliders if there are any
             hideSliders(customCommand);
-            hideRunningUIs();
+            leftPanel.style.display = "none";
+            rightPanel.style.display = "none";
             // enable the button
             addButton.disabled = false;
             select.disabled = false;
