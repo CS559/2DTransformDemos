@@ -650,11 +650,18 @@ export function setupDemo() {
             ["rotate",-45],
             ["fillrect",-10,-10,20,20,"#F0000080"]
         ]}, {
-        title: "Scale and then rotate", 
+        title: "NU Scale and then rotate", 
         transformations: 
         [
             ["scale",2,1],
             ["rotate",45],
+            ["fillRect",-10,-10,20,20]
+        ]}, {
+        title: "rotate then scale NU", 
+        transformations: 
+        [
+            ["rotate",45],
+            ["scale",2,1],
             ["fillRect",-10,-10,20,20]
         ]}, {
         title: "Bend an arm 45 degrees at Elbow and Wrist",
