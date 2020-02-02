@@ -5,14 +5,6 @@
 // please read runCanvas.js for more details 
 import { RunCanvas } from "./Libs/runCanvas.js";
 
-// default transforms
-let test1 = [
-    ["rotate", 45],
-    ["scale", 2, 1],
-    ["rotate", -45],
-    ["fillrect", -10, -10, 20, 20]
-];
-
 /**
  * Convert angles from degrees to radians
  * @param {Number} angle 
@@ -77,6 +69,7 @@ function drawCsys(context, color = "#7F0000", drawBlock = undefined) {
     context.stroke();
     context.restore();
 
+    // draw two arrows pointing the postive dir of axes
     context.save();
     context.fillStyle = color;
     context.moveTo(3, 50);
@@ -104,15 +97,17 @@ function drawCsys(context, color = "#7F0000", drawBlock = undefined) {
 function doTransform(context, transformList, param, direction = 1) {
     // is the text in the code section under the canvas
     let html = "";
+    // keep track of unpaired save
+    let saved;
     // iterate through all transforms in the list
     // but some will get done, some will not (based on how big param is)
     // look at the array test1 in the beginning of this script to have an idea of how "t
     // below would be like
     transformList.forEach(function (t, i) {
-        let command = t[0][0]; // should be the first letter of the transfrom
+        let command = t[0]; // should be the first letter of the transfrom
         // since 2 different things begin with t...
-        if (t[0]=="triangle") command="3";
 
+        // keep track of which commands are ready to be run
         let amt = (direction >= 0) ?
             (i > param) ? 0 : Math.min(1, param - i) : // if direction >= 0, do this line
             ((i + 1) < param) ? 0 : Math.min(1, (i + 1) - param); // if not, do this line
@@ -129,22 +124,22 @@ function doTransform(context, transformList, param, direction = 1) {
             return (`<span class="${style}">${htmlLine}</span><br/>`);
         }
 
-        // translate, rotate, scale, or fillRect
-        if (command == "t") {
+        // translate, rotate, scale, fillRect, save or restore
+        if (command == "translate") {
             let x = t[1] * amt;
             let y = t[2] * amt;
             context.translate(x, y);
             html += stylize(amt, `context.translate(${x.toFixed(1)},${y.toFixed(1)});`);
-        } else if (command == "r") {
+        } else if (command == "rotate") {
             let a = t[1] * amt;
             context.rotate(degToRad(a));
             html += stylize(amt, `context.rotate(${a.toFixed(1)});`);
-        } else if (command == "s") {
+        } else if (command == "scale") {
             let x = amt * t[1] + (1 - amt) * 1;
             let y = amt * t[2] + (1 - amt) * 1;
             context.scale(x, y);
             html += stylize(amt, `context.scale(${x.toFixed(1)},${y.toFixed(1)});`);
-        } else if (command == "f") {
+        } else if (command == "fillRect") {
             let color = t.length > 5 ? t[5] : "blue";
             if (amt > 0) {
                 context.save();
@@ -160,7 +155,7 @@ function doTransform(context, transformList, param, direction = 1) {
             }
             html += stylize(amt, `context.fillStyle="${color}"`);
             html += stylize(amt, `context.fillRect(${t[1]},${t[2]},${t[3]},${t[4]});`);
-        } else if (command == "3") {
+        } else if (command == "triangle") {
             let color = t.length > 3 ? t[3] : "blue";
             if (amt > 0) {
                 context.save();
@@ -168,19 +163,31 @@ function doTransform(context, transformList, param, direction = 1) {
                 context.fillStyle = color;
                 context.beginPath();
                 context.moveTo(0, 0);
-                context.lineTo(10,0);
+                context.lineTo(10, 0);
                 context.lineTo(0, 20);
                 context.closePath();
                 context.fill();
                 context.restore();
             }
             html += stylize(amt, `context.fillStyle="${color}"`);
-            html += stylize(amt, `triangle(context,${t[1]},${t[2]},${t[3]},${t[4]});`);
+            html += stylize(amt, `triangle(context,${t[1]},${t[2]},${t[3]});`);
+        } else if (command == "save") {
+            if (amt > 0) {
+                context.save();
+                saved = true;
+            }
+            html += stylize(amt, `context.save();`);
+        } else if (command == "restore") {
+            if (amt > 0) {
+                context.restore();
+                saved = false;
+            }
+            html += stylize(amt, `context.restore();`);
         } else { // bad command
             console.log(`Bad transform ${t}`);
         }
-    }); // end foreach transform
-    return html;
+    });
+    return {html: html, saved: saved};
 }
 
 /**
@@ -189,9 +196,9 @@ function doTransform(context, transformList, param, direction = 1) {
  * @param {Array<Array>} transformList 
  * @param {HTMLElement} div 
  * @param {HTMLInputElement} dirTog
- * @param {HTMLInputElement} csTog
+ * @param {HTMLInputElement} finalTog
  */
-function makeDraw(canvas, transformList, div, dirTog = undefined, orTog = undefined, csTog = undefined) {
+function makeDraw(canvas, transformList, div, dirTog = undefined, orTog = undefined, finalTog = undefined) {
     /**
      * @param {HTMLCanvasElement} canvas
      * @param {number} param
@@ -201,28 +208,33 @@ function makeDraw(canvas, transformList, div, dirTog = undefined, orTog = undefi
         context.clearRect(0, 0, canvas.width, canvas.height);
 
         context.save();
+        // move to the center of the canvas
         context.translate(canvas.width / 2, canvas.height / 2);
         context.scale(2, 2);
 
         context.save();
+        // draw the original coor system if the toggle is checked
         if (!(orTog && !orTog.checked)) {
             drawCsys(context, "black");
         }
-        let html = doTransform(context, transformList, param, dirTog ? (dirTog.checked ? -1 : 1) : 1);
-        if (!(csTog && !csTog.checked)) {            
+        let dt = doTransform(context, transformList, param, dirTog ? (dirTog.checked ? -1 : 1) : 1);
+        // draw the final coor system if the toggle is checked
+        if (!(finalTog && !finalTog.checked)) {
             drawCsys(context);
         }
+        // if only saved but not restored, add a restore here
+        if (dt.saved) context.restore(); 
         context.restore();
 
         context.restore();
 
-        div.innerHTML = html;
+        div.innerHTML = dt.html;
     }
     return draw;
 }
 
-// useful utility function for creating HTML
 /**
+ * Useful utility function for creating HTML
  * https://plainjs.com/javascript/manipulation/insert-an-element-after-or-before-another-32/
  * @param {HTMLElement} el 
  * @param {HTMLElement} referenceNode 
@@ -232,13 +244,14 @@ function insertAfter(el, referenceNode) {
 }
 
 /**
+ * Make a select with given parameters
  * @param {string[]} values
  * @param {HTMLDivElement} where
  * @param {string} [initial]
  */
 function makeSelect(values, where, initial) {
     let select = document.createElement("select");
-    values.forEach(function(ch) {
+    values.forEach(function (ch) {
         let opt = document.createElement("option");
         opt.value = ch;
         opt.text = ch;
@@ -250,6 +263,7 @@ function makeSelect(values, where, initial) {
 }
 
 /**
+ * Create a slider with given parameters
  * @param {string} name
  * @param {number} min
  * @param {number} max
@@ -260,21 +274,21 @@ function createSlider(name, min, max, value, step) {
     let sliderDiv = document.createElement("div");
 
     let slider = document.createElement("input");
-    slider.setAttribute("type","range");
+    slider.setAttribute("type", "range");
     slider.style.width = String(300);
-    slider.setAttribute("min",String(min));
-    slider.setAttribute("max",String(max));
-    slider.setAttribute("value",String(value));
-    slider.setAttribute("step",String(step));
+    slider.setAttribute("min", String(min));
+    slider.setAttribute("max", String(max));
+    slider.setAttribute("value", String(value));
+    slider.setAttribute("step", String(step));
     sliderDiv.appendChild(slider);
 
     let sliderLabel = document.createElement("label");
     sliderLabel.setAttribute("for", slider.id);
     sliderLabel.innerText = name + slider.value;
-    sliderLabel.style.cssText = "margin-left: 10px";
+    sliderLabel.style.cssText = "margin-left: 5px";
     sliderDiv.appendChild(sliderLabel);
 
-    slider.oninput = function() {
+    slider.oninput = function () {
         sliderLabel.innerText = name + String(slider.value);
     };
 
@@ -283,18 +297,12 @@ function createSlider(name, min, max, value, step) {
 
 /**
  * Create a transformation example
- * 
  * @param {string} title 
  * @param {Array} transforms 
  */
 function createExample(title, transforms = undefined) {
     // make sure each canvas has a different name
     let canvasName = title;
-
-    // heading
-    // let heading = document.createElement("h2");
-    // heading.innerText = title;
-    // document.getElementsByTagName("body")[0].appendChild(heading);
 
     // division to hold the example 
     let exampleDiv = document.createElement("div");
@@ -333,22 +341,6 @@ function createExample(title, transforms = undefined) {
     leftBrOne.id = canvasName + "-leftBr2";
     document.getElementById(leftPanel.id).appendChild(leftBrOne);
 
-    // checkbox and label for showing the original coordinate system
-    // let orTogLeft = document.createElement("input");
-    // orTogLeft.setAttribute("type", "checkbox"); 
-    // orTogLeft.setAttribute("checked", "true");
-    // orTogLeft.id = canvasName + "-olt";
-    // document.getElementById(leftPanel.id).appendChild(orTogLeft);
-
-    // let orLabelLeft = document.createElement("label");
-    // orLabelLeft.setAttribute("for", orTogLeft.id);
-    // orLabelLeft.innerText = "Show the original coordinate system";
-    // document.getElementById(leftPanel.id).appendChild(orLabelLeft);
-
-    // let leftBrThree = document.createElement("br");
-    // leftBrThree.id = canvasName + "-leftBr3";
-    // document.getElementById(leftPanel.id).appendChild(leftBrThree);
-
     // checkbox and label for showing the final result
     let resultTog = document.createElement("input");
     resultTog.setAttribute("type", "checkbox");
@@ -384,7 +376,7 @@ function createExample(title, transforms = undefined) {
 
     // checkbox and label for showing the original coordinate system
     let orTogRight = document.createElement("input");
-    orTogRight.setAttribute("type", "checkbox"); 
+    orTogRight.setAttribute("type", "checkbox");
     orTogRight.setAttribute("checked", "true");
     orTogRight.id = canvasName + "-ot";
     document.getElementById(rightPanel.id).appendChild(orTogRight);
@@ -415,6 +407,7 @@ function createExample(title, transforms = undefined) {
     document.getElementById(rightDiv.id).appendChild(rightCodeDiv);
 
     /**
+     * Run the program with a given transform list
      * @param {Array<Array>} transformsToDo
      */
     function run(transformsToDo) {
@@ -425,16 +418,12 @@ function createExample(title, transforms = undefined) {
         rc.setupSlider(0, transformsToDo.length, 0.02);
         rc.setValue(0);
 
-        // orTogLeft.onchange = function() {
-        //     md(leftCanvas, transformsToDo.length);
-        // };
-
-        dirTog.onchange = function() {
+        dirTog.onchange = function () {
             md(leftCanvas, Number(rc.range.value));
         };
 
         // set up the right part if the checkbox is checked
-        resultTog.onchange = function() {
+        resultTog.onchange = function () {
             if (resultTog.checked) {
                 document.getElementById(rightDiv.id).style.display = "block";
             } else {
@@ -446,31 +435,35 @@ function createExample(title, transforms = undefined) {
         let mdFinal = makeDraw(rightCanvas, transformsToDo, rightCodeDiv, undefined, orTogRight, finalTog);
         mdFinal(rightCanvas, transformsToDo.length);
 
-        finalTog.onchange = function() {
+        finalTog.onchange = function () {
             mdFinal(rightCanvas, transformsToDo.length);
         };
 
-        orTogRight.onchange = function() {
+        orTogRight.onchange = function () {
             mdFinal(rightCanvas, transformsToDo.length);
         };
     }
 
     /**
+     * Hide the user input sliders
      * @param {{ sliders: HTMLDivElement[]; }} customCommand
      */
     function hideSliders(customCommand) {
-        if (customCommand) {
+        if (customCommand && customCommand.sliders) {
             customCommand.sliders.forEach(
                 /**
                  * @param {HTMLDivElement} sd
                  */
-                function(sd) {
+                function (sd) {
                     sd.style.display = "none";
                 }
             );
         }
     }
 
+    /**
+     * Reset the running canvas
+     */
     function reset() {
         leftCanvas.getContext("2d").clearRect(0, 0, leftCanvas.width, leftCanvas.height);
         rightCanvas.getContext("2d").clearRect(0, 0, rightCanvas.width, rightCanvas.height);
@@ -483,26 +476,32 @@ function createExample(title, transforms = undefined) {
     if (transforms) {
         run(transforms);
     } else {
+        // the customized example
         let customDiv = document.createElement("div");
         customDiv.id = canvasName + "-custom";
         insertAfter(customDiv, leftPanel);
 
-        let select = makeSelect(["Please select one transform", "translate", "scale", "rotate", "fillRect"], customDiv);
+        // a dropdown menu used to select a command
+        let select = makeSelect(["Please select one transform", "translate", "scale", 
+        "rotate", "fillRect", "save", "restore"], customDiv);
         select.id = canvasName + "-select";
         select.style.cssText = "margin-bottom: 5px; margin-top: 10px";
 
+        // button to add the selected transform to the list
         let addButton = document.createElement("button");
         addButton.id = canvasName + "-addB";
         addButton.innerHTML = "Add";
         addButton.style.cssText = "margin-left: 7px";
         customDiv.appendChild(addButton);
 
+        // button to run the program
         let runButton = document.createElement("button");
         runButton.id = canvasName + "-runB";
         runButton.innerHTML = "Run";
         runButton.style.cssText = "margin-left: 7px";
         customDiv.appendChild(runButton);
 
+        // button to reset the program
         let resetButton = document.createElement("button");
         resetButton.id = canvasName + "-resetB";
         resetButton.innerHTML = "Reset";
@@ -511,6 +510,7 @@ function createExample(title, transforms = undefined) {
 
         rightCodeDiv.style.paddingTop = "38px";
 
+        // initially hide the panels
         leftPanel.style.display = "none";
         rightPanel.style.display = "none";
 
@@ -518,22 +518,25 @@ function createExample(title, transforms = undefined) {
         let customCommand;
         let running;
 
-        addButton.onclick = function() {
+        addButton.onclick = function () {
             if (customCommand) {
                 let customTransform = [];
                 let parameters = "";
                 customTransform.push(customCommand.name);
-                customCommand.sliders.forEach(
-                    /**
-                     * @param {HTMLDivElement} sd
-                     * @param {Number} i
-                     */
-                    function(sd, i) {
-                        let sdSlider = /** @type {HTMLInputElement} */ (sd.children[0]);
-                        customTransform.push(Number(sdSlider.value));
-                        parameters += (i ? "," : "") + sdSlider.value;
-                    }
-                );
+                // read the value of sliders
+                if (customCommand.sliders) {
+                    customCommand.sliders.forEach(
+                        /**
+                         * @param {HTMLDivElement} sd
+                         * @param {Number} i
+                         */
+                        function (sd, i) {
+                            let sdSlider = /** @type {HTMLInputElement} */ (sd.children[0]);
+                            customTransform.push(Number(sdSlider.value));
+                            parameters += (i ? "," : "") + sdSlider.value;
+                        }
+                    );
+                }
                 customTransformList.push(customTransform);
                 // console.log(customTransform);
                 let htmlLine = "context." + customTransform[0] + "(" + parameters + ");";
@@ -541,7 +544,7 @@ function createExample(title, transforms = undefined) {
             }
         };
 
-        runButton.onclick = function() {
+        runButton.onclick = function () {
             // hide the sliders and 
             hideSliders(customCommand);
             // reset the drop down menu
@@ -565,7 +568,7 @@ function createExample(title, transforms = undefined) {
             // console.log(customTransformList);
         };
 
-        resetButton.onclick = function() {
+        resetButton.onclick = function () {
             // reset the drop down menu
             select.options[0].selected = true;
             // clear the code divisions
@@ -585,10 +588,10 @@ function createExample(title, transforms = undefined) {
             }
             // clear the transformation parameters
             customCommand = undefined;
-            customTransformList = [];            
+            customTransformList = [];
         };
 
-        select.onchange = function() {
+        select.onchange = function () {
             let command = select.options[select.selectedIndex].text;
             // hide the sliders if there are any
             hideSliders(customCommand);
@@ -600,17 +603,17 @@ function createExample(title, transforms = undefined) {
                 let translateY = createSlider("translateY: ", -50, 50, 0, 5);
                 translateY.id = canvasName + "-tY";
                 // store the sliders to a custom command
-                customCommand = {name: "translate", sliders: [translateX, translateY]};
+                customCommand = { name: "translate", sliders: [translateX, translateY] };
             } else if (command == "scale") {
                 let scaleX = createSlider("scaleX: ", 0, 3, 1, 0.5);
                 scaleX.id = canvasName + "-sX";
                 let scaleY = createSlider("scaleY: ", 0, 3, 1, 0.5);
                 scaleY.id = canvasName + "-sY";
-                customCommand = {name: "scale", sliders: [scaleX, scaleY]};
+                customCommand = { name: "scale", sliders: [scaleX, scaleY] };
             } else if (command == "rotate") {
                 let rotate = createSlider("angle: ", -180, 180, 0, 5);
                 rotate.id = canvasName + "-rotate";
-                customCommand = {name: "rotate", sliders: [rotate]};
+                customCommand = { name: "rotate", sliders: [rotate] };
             } else if (command == "fillRect") {
                 let posX = createSlider("posX: ", -50, 50, 0, 10);
                 posX.id = canvasName + "-pX";
@@ -620,18 +623,22 @@ function createExample(title, transforms = undefined) {
                 sizeX.id = canvasName + "-sizeX";
                 let sizeY = createSlider("sizeY: ", 0, 100, 0, 10);
                 sizeY.id = canvasName + "-sizeY";
-                customCommand = {name: "fillRect", sliders: [posX, posY, sizeX, sizeY]};
+                customCommand = { name: "fillRect", sliders: [posX, posY, sizeX, sizeY] };
+            } else if (command == "save") {
+                customCommand = { name: "save"};
+            } else if (command == "restore") {
+                customCommand = { name: "restore"};
             } else {
                 // bad transforamtion command
                 customCommand = undefined;
             }
-            // if a valid command, show related sliders
-            if (customCommand) {
+            // if a valid command, show related input sliders
+            if (customCommand && customCommand.sliders) {
                 customCommand.sliders.forEach(
                     /**
                      * @param {HTMLDivElement} sd
                      */
-                    function(sd) {
+                    function (sd) {
                         customDiv.appendChild(sd);
                         sd.style.display = "block";
                     }
@@ -642,6 +649,9 @@ function createExample(title, transforms = undefined) {
     return exampleDiv;
 }
 
+/**
+ * Set up the demo
+ */
 export function setupDemo() {
     let headingDiv = document.createElement("div");
     headingDiv.id = "headingDiv";
@@ -652,65 +662,85 @@ export function setupDemo() {
 
     let examples = [
         {
-        title: "Scale about a 45 degrees Axis", 
-        transformations: 
-        [
-            ["rotate",45],
-            ["scale",2,1],
-            ["rotate",-45],
-            ["fillrect",-10,-10,20,20,"#F0000080"]
-        ]}, {
-        title: "Scale about a 45 degrees Axis (w/original square)",
-        transformations: 
-        [
-            ["fillrect",-10,-10,20,20,"#800000"],
-            ["rotate",45],
-            ["scale",2,1],
-            ["rotate",-45],
-            ["fillrect",-10,-10,20,20,"#F0000080"]
-        ]}, {
-        title: "Triangle Test",
-        transformations: 
-        [
-            ["triangle",0,0,"red"],
-            ["translate",20,0],
-            ["3",0,0],
-            ["3",10,10]
-        ]}, {
-        title: "NU Scale and then rotate", 
-        transformations: 
-        [
-            ["scale",2,1],
-            ["rotate",45],
-            ["fillRect",-10,-10,20,20]
-        ]}, {
-        title: "rotate then scale NU", 
-        transformations: 
-        [
-            ["rotate",45],
-            ["scale",2,1],
-            ["fillRect",-10,-10,20,20]
-        ]}, {
-        title: "Bend an arm 45 degrees at Elbow and Wrist",
-        transformations: 
-        [
-            ["fillRect",0,0,20,10,"purple"],
-            ["translate",20,0],
-            ["rotate",45],
-            ["fillRect",0,0,20,10,"blue"],
-            ["translate",20,0],
-            ["rotate",45],
-            ["fillRect",0,0,10,10,"green"]  
-        ]}, {
-        title: "Rotate about object center", 
-        transformations: 
-        [
-            ["translate",30,30],
-            ["rotate",45],
-            ["translate",-30,-30],
-            ["fillRect",20,20,40,40]
-        ]}, {
-        title: "Your turn to play with it", 
+            title: "Scale about a 45 degrees Axis",
+            transformations:
+                [
+                    ["rotate", 45],
+                    ["scale", 2, 1],
+                    ["rotate", -45],
+                    ["fillRect", -10, -10, 20, 20, "#F0000080"]
+                ]
+        }, {
+            title: "Scale about a 45 degrees Axis (w/original square)",
+            transformations:
+                [
+                    ["fillRect", -10, -10, 20, 20, "#800000"],
+                    ["rotate", 45],
+                    ["scale", 2, 1],
+                    ["rotate", -45],
+                    ["fillRect", -10, -10, 20, 20, "#F0000080"]
+                ]
+        }, {
+            title: "Triangle Test",
+            transformations:
+                [
+                    ["triangle", 0, 0, "red"],
+                    ["translate", 20, 0],
+                    ["triangle", 0, 0],
+                    ["triangle", 10, 10]
+                ]
+        }, {
+            title: "NU Scale and then rotate",
+            transformations:
+                [
+                    ["scale", 2, 1],
+                    ["rotate", 45],
+                    ["fillRect", -10, -10, 20, 20]
+                ]
+        }, {
+            title: "rotate then scale NU",
+            transformations:
+                [
+                    ["rotate", 45],
+                    ["scale", 2, 1],
+                    ["fillRect", -10, -10, 20, 20]
+                ]
+        }, {
+            title: "Bend an arm 45 degrees at Elbow and Wrist",
+            transformations:
+                [
+                    ["fillRect", 0, 0, 20, 10, "purple"],
+                    ["translate", 20, 0],
+                    ["rotate", 45],
+                    ["fillRect", 0, 0, 20, 10, "blue"],
+                    ["translate", 20, 0],
+                    ["rotate", 45],
+                    ["fillRect", 0, 0, 10, 10, "green"]
+                ]
+        }, {
+            title: "Rotate about object center",
+            transformations:
+                [
+                    ["translate", 30, 30],
+                    ["rotate", 45],
+                    ["translate", -30, -30],
+                    ["fillRect", 20, 20, 40, 40]
+                ]
+        },  {
+            title: "Test save and restore",
+            transformations:
+                [
+                    ["save"],
+                    ["translate", 30, 30],
+                    ["rotate", 45],
+                    ["fillRect", 0, 0, 30, 30, "red"],
+                    ["restore"],
+                    ["translate", -30, -30],
+                    ["rotate", -45],
+                    ["fillRect", 0, 0, 30, 30]
+                ]
+        }, {
+            title: "Your turn to play with it",
         }
     ];
 
@@ -721,11 +751,13 @@ export function setupDemo() {
         titles.push(e.title);
     });
 
+    // make a dropdown menu to select examples
     let selectExample = makeSelect(titles, headingDiv);
     selectExample.id = "exampleSelect";
 
+    // switch between different examples
     let currentExample;
-    selectExample.onchange = function() {
+    selectExample.onchange = function () {
         if (currentExample) currentExample.style.display = "none";
         let selectedTitle = selectExample.options[selectExample.selectedIndex].text;
         exampleDivs.forEach(ed => {
