@@ -110,6 +110,9 @@ function doTransform(context, transformList, param, direction = 1) {
     // below would be like
     transformList.forEach(function (t, i) {
         let command = t[0][0]; // should be the first letter of the transfrom
+        // since 2 different things begin with t...
+        if (t[0]=="triangle") command="3";
+
         let amt = (direction >= 0) ?
             (i > param) ? 0 : Math.min(1, param - i) : // if direction >= 0, do this line
             ((i + 1) < param) ? 0 : Math.min(1, (i + 1) - param); // if not, do this line
@@ -157,7 +160,23 @@ function doTransform(context, transformList, param, direction = 1) {
             }
             html += stylize(amt, `context.fillStyle="${color}"`);
             html += stylize(amt, `context.fillRect(${t[1]},${t[2]},${t[3]},${t[4]});`);
-        } else {
+        } else if (command == "3") {
+            let color = t.length > 3 ? t[3] : "blue";
+            if (amt > 0) {
+                context.save();
+                context.translate(t[1], t[2]);
+                context.fillStyle = color;
+                context.beginPath();
+                context.moveTo(0, 0);
+                context.lineTo(10,0);
+                context.lineTo(0, 20);
+                context.closePath();
+                context.fill();
+                context.restore();
+            }
+            html += stylize(amt, `context.fillStyle="${color}"`);
+            html += stylize(amt, `triangle(context,${t[1]},${t[2]},${t[3]},${t[4]});`);
+        } else { // bad command
             console.log(`Bad transform ${t}`);
         }
     }); // end foreach transform
@@ -632,7 +651,7 @@ export function setupDemo() {
     document.getElementsByTagName("body")[0].appendChild(br);
 
     let examples = [
-    {
+        {
         title: "Scale about a 45 degrees Axis", 
         transformations: 
         [
@@ -649,6 +668,14 @@ export function setupDemo() {
             ["scale",2,1],
             ["rotate",-45],
             ["fillrect",-10,-10,20,20,"#F0000080"]
+        ]}, {
+        title: "Triangle Test",
+        transformations: 
+        [
+            ["triangle",0,0,"red"],
+            ["translate",20,0],
+            ["3",0,0],
+            ["3",10,10]
         ]}, {
         title: "NU Scale and then rotate", 
         transformations: 
