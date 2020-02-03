@@ -97,8 +97,9 @@ function drawCsys(context, color = "#7F0000", drawBlock = undefined) {
 function doTransform(context, transformList, param, direction = 1) {
     // is the text in the code section under the canvas
     let html = "";
-    // keep track of unpaired save
-    let saved;
+    // add a stack to store user transform save/restore specially
+    let transformStack = [];
+
     // iterate through all transforms in the list
     // but some will get done, some will not (based on how big param is)
     // look at the array test1 in the beginning of this script to have an idea of how "t
@@ -173,21 +174,19 @@ function doTransform(context, transformList, param, direction = 1) {
             html += stylize(amt, `triangle(context,${t[1]},${t[2]},${t[3]});`);
         } else if (command == "save") {
             if (amt > 0) {
-                context.save();
-                saved = true;
+                transformStack.push(context.getTransform());
             }
             html += stylize(amt, `context.save();`);
         } else if (command == "restore") {
-            if (amt > 0) {
-                context.restore();
-                saved = false;
+            if (amt > 0 && transformStack.length) {
+                context.setTransform(transformStack.pop());
             }
             html += stylize(amt, `context.restore();`);
         } else { // bad command
             console.log(`Bad transform ${t}`);
         }
     });
-    return {html: html, saved: saved};
+    return html;
 }
 
 /**
@@ -217,18 +216,16 @@ function makeDraw(canvas, transformList, div, dirTog = undefined, orTog = undefi
         if (!(orTog && !orTog.checked)) {
             drawCsys(context, "black");
         }
-        let dt = doTransform(context, transformList, param, dirTog ? (dirTog.checked ? -1 : 1) : 1);
+        let html = doTransform(context, transformList, param, dirTog ? (dirTog.checked ? -1 : 1) : 1);
         // draw the final coor system if the toggle is checked
         if (!(finalTog && !finalTog.checked)) {
             drawCsys(context);
         }
-        // if only saved but not restored, add a restore here
-        if (dt.saved) context.restore(); 
         context.restore();
 
         context.restore();
 
-        div.innerHTML = dt.html;
+        div.innerHTML = html;
     }
     return draw;
 }
@@ -244,12 +241,45 @@ function insertAfter(el, referenceNode) {
 }
 
 /**
+ * Create a slider with given parameters
+ * @param {string} name
+ * @param {number} min
+ * @param {number} max
+ * @param {number} value
+ * @param {number} step
+ */
+function createSlider(name, min, max, value, step) {
+    let sliderDiv = document.createElement("div");
+
+    let slider = document.createElement("input");
+    slider.setAttribute("type", "range");
+    slider.style.width = String(270);
+    slider.setAttribute("min", String(min));
+    slider.setAttribute("max", String(max));
+    slider.setAttribute("value", String(value));
+    slider.setAttribute("step", String(step));
+    sliderDiv.appendChild(slider);
+
+    let sliderLabel = document.createElement("label");
+    sliderLabel.setAttribute("for", slider.id);
+    sliderLabel.innerText = name + slider.value;
+    sliderLabel.style.cssText = "margin-left: 7px";
+    sliderDiv.appendChild(sliderLabel);
+
+    slider.oninput = function () {
+        sliderLabel.innerText = name + String(slider.value);
+    };
+
+    return sliderDiv;
+}
+
+/**
  * Make a select with given parameters
  * @param {string[]} values
  * @param {HTMLDivElement} where
  * @param {string} [initial]
  */
-function makeSelect(values, where, initial) {
+export function makeSelect(values, where, initial) {
     let select = document.createElement("select");
     values.forEach(function (ch) {
         let opt = document.createElement("option");
@@ -263,44 +293,11 @@ function makeSelect(values, where, initial) {
 }
 
 /**
- * Create a slider with given parameters
- * @param {string} name
- * @param {number} min
- * @param {number} max
- * @param {number} value
- * @param {number} step
- */
-function createSlider(name, min, max, value, step) {
-    let sliderDiv = document.createElement("div");
-
-    let slider = document.createElement("input");
-    slider.setAttribute("type", "range");
-    slider.style.width = String(300);
-    slider.setAttribute("min", String(min));
-    slider.setAttribute("max", String(max));
-    slider.setAttribute("value", String(value));
-    slider.setAttribute("step", String(step));
-    sliderDiv.appendChild(slider);
-
-    let sliderLabel = document.createElement("label");
-    sliderLabel.setAttribute("for", slider.id);
-    sliderLabel.innerText = name + slider.value;
-    sliderLabel.style.cssText = "margin-left: 5px";
-    sliderDiv.appendChild(sliderLabel);
-
-    slider.oninput = function () {
-        sliderLabel.innerText = name + String(slider.value);
-    };
-
-    return sliderDiv;
-}
-
-/**
  * Create a transformation example
  * @param {string} title 
  * @param {Array} transforms 
  */
-function createExample(title, transforms = undefined) {
+export function createExample(title, transforms = undefined) {
     // make sure each canvas has a different name
     let canvasName = title;
 
@@ -494,6 +491,13 @@ function createExample(title, transforms = undefined) {
         addButton.style.cssText = "margin-left: 7px";
         customDiv.appendChild(addButton);
 
+        // button to delete the last transform from the list
+        let deleteButton = document.createElement("button");
+        deleteButton.id = canvasName + "-deleteB";
+        deleteButton.innerHTML = "Delete";
+        deleteButton.style.cssText = "margin-left: 7px";
+        customDiv.appendChild(deleteButton);
+
         // button to run the program
         let runButton = document.createElement("button");
         runButton.id = canvasName + "-runB";
@@ -517,6 +521,7 @@ function createExample(title, transforms = undefined) {
         let customTransformList = [];
         let customCommand;
         let running;
+        let lastInnerHTML = [];
 
         addButton.onclick = function () {
             if (customCommand) {
@@ -539,10 +544,18 @@ function createExample(title, transforms = undefined) {
                 }
                 customTransformList.push(customTransform);
                 // console.log(customTransform);
+                lastInnerHTML.push(leftCodeDiv.innerHTML);
                 let htmlLine = "context." + customTransform[0] + "(" + parameters + ");";
                 leftCodeDiv.innerHTML += `<span class="c-one">${htmlLine}</span><br/>`;
             }
         };
+
+        deleteButton.onclick = function () {
+            if (customTransformList.length > 0) {
+                customTransformList.pop();
+                leftCodeDiv.innerHTML = lastInnerHTML.pop();
+            }
+        }
 
         runButton.onclick = function () {
             // hide the sliders and 
@@ -562,6 +575,7 @@ function createExample(title, transforms = undefined) {
                 rightPanel.style.display = "block";
                 // in case the user clicks add when an example is running
                 addButton.disabled = true;
+                deleteButton.disabled = true;
                 select.disabled = true;
                 running = true;
             }
@@ -580,6 +594,7 @@ function createExample(title, transforms = undefined) {
             rightPanel.style.display = "none";
             // enable the button
             addButton.disabled = false;
+            deleteButton.disabled = false;
             select.disabled = false;
             // reset these if it is running
             if (running) {
@@ -647,124 +662,4 @@ function createExample(title, transforms = undefined) {
         };
     }
     return exampleDiv;
-}
-
-/**
- * Set up the demo
- */
-export function setupDemo() {
-    let headingDiv = document.createElement("div");
-    headingDiv.id = "headingDiv";
-    document.getElementsByTagName("body")[0].appendChild(headingDiv);
-
-    let br = document.createElement("br");
-    document.getElementsByTagName("body")[0].appendChild(br);
-
-    let examples = [
-        {
-            title: "Scale about a 45 degrees Axis",
-            transformations:
-                [
-                    ["rotate", 45],
-                    ["scale", 2, 1],
-                    ["rotate", -45],
-                    ["fillRect", -10, -10, 20, 20, "#F0000080"]
-                ]
-        }, {
-            title: "Scale about a 45 degrees Axis (w/original square)",
-            transformations:
-                [
-                    ["fillRect", -10, -10, 20, 20, "#800000"],
-                    ["rotate", 45],
-                    ["scale", 2, 1],
-                    ["rotate", -45],
-                    ["fillRect", -10, -10, 20, 20, "#F0000080"]
-                ]
-        }, {
-            title: "Triangle Test",
-            transformations:
-                [
-                    ["triangle", 0, 0, "red"],
-                    ["translate", 20, 0],
-                    ["triangle", 0, 0],
-                    ["triangle", 10, 10]
-                ]
-        }, {
-            title: "NU Scale and then rotate",
-            transformations:
-                [
-                    ["scale", 2, 1],
-                    ["rotate", 45],
-                    ["fillRect", -10, -10, 20, 20]
-                ]
-        }, {
-            title: "rotate then scale NU",
-            transformations:
-                [
-                    ["rotate", 45],
-                    ["scale", 2, 1],
-                    ["fillRect", -10, -10, 20, 20]
-                ]
-        }, {
-            title: "Bend an arm 45 degrees at Elbow and Wrist",
-            transformations:
-                [
-                    ["fillRect", 0, 0, 20, 10, "purple"],
-                    ["translate", 20, 0],
-                    ["rotate", 45],
-                    ["fillRect", 0, 0, 20, 10, "blue"],
-                    ["translate", 20, 0],
-                    ["rotate", 45],
-                    ["fillRect", 0, 0, 10, 10, "green"]
-                ]
-        }, {
-            title: "Rotate about object center",
-            transformations:
-                [
-                    ["translate", 30, 30],
-                    ["rotate", 45],
-                    ["translate", -30, -30],
-                    ["fillRect", 20, 20, 40, 40]
-                ]
-        },  {
-            title: "Test save and restore",
-            transformations:
-                [
-                    ["save"],
-                    ["translate", 30, 30],
-                    ["rotate", 45],
-                    ["fillRect", 0, 0, 30, 30, "red"],
-                    ["restore"],
-                    ["translate", -30, -30],
-                    ["rotate", -45],
-                    ["fillRect", 0, 0, 30, 30]
-                ]
-        }, {
-            title: "Your turn to play with it",
-        }
-    ];
-
-    let titles = ["Please select one example"];
-    let exampleDivs = [];
-    examples.forEach(e => {
-        exampleDivs.push(createExample(e.title, e.transformations));
-        titles.push(e.title);
-    });
-
-    // make a dropdown menu to select examples
-    let selectExample = makeSelect(titles, headingDiv);
-    selectExample.id = "exampleSelect";
-
-    // switch between different examples
-    let currentExample;
-    selectExample.onchange = function () {
-        if (currentExample) currentExample.style.display = "none";
-        let selectedTitle = selectExample.options[selectExample.selectedIndex].text;
-        exampleDivs.forEach(ed => {
-            if (ed.id == selectedTitle + "-example") {
-                currentExample = ed;
-            }
-        });
-        if (currentExample) currentExample.style.display = "flex";
-    };
 }
