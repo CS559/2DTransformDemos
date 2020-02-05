@@ -459,6 +459,23 @@ export function createExample(title, transforms = undefined) {
     }
 
     /**
+     * Hide reverse if there is save/restore command
+     * @param {Array<Array>} transformList
+     */
+    function hideDirTog(transformList) {
+        for (let i = 0; i < transformList.length; i++) {
+            let t = transformList[i];
+            if (t[0] == "save" || t[0] == "restore") {
+                dirTog.disabled = true;
+                dirLabel.style.color = "lightgray";
+                return;
+            }
+        }
+        dirTog.disabled = false;
+        dirLabel.style.color = "black";
+    }
+
+    /**
      * Reset the running canvas
      */
     function reset() {
@@ -471,6 +488,7 @@ export function createExample(title, transforms = undefined) {
     }
 
     if (transforms) {
+        hideDirTog(transforms);
         run(transforms);
     } else {
         // the customized example
@@ -555,11 +573,12 @@ export function createExample(title, transforms = undefined) {
                 customTransformList.pop();
                 leftCodeDiv.innerHTML = lastInnerHTML.pop();
             }
-        }
+        };
 
         runButton.onclick = function () {
-            // hide the sliders and 
+            // hide the sliders and reverse toggle
             hideSliders(customCommand);
+            hideDirTog(customTransformList);
             // reset the drop down menu
             select.options[0].selected = true;
             // in case the user keeps clicking run
@@ -592,6 +611,8 @@ export function createExample(title, transforms = undefined) {
             hideSliders(customCommand);
             leftPanel.style.display = "none";
             rightPanel.style.display = "none";
+            // reset reverse toggle
+            dirTog.checked = false;
             // enable the button
             addButton.disabled = false;
             deleteButton.disabled = false;
