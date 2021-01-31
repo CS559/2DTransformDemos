@@ -1,4 +1,7 @@
 <html>
+    <head>
+        <script src="https://kit.fontawesome.com/2702ddf045.js" crossorigin="anonymous"></script>
+    </head>
 <style>
     .c-zero {
         color: lightgray;
@@ -10,6 +13,17 @@
 
     .c-one {
         color: black;
+    }
+    #headingDiv {
+        /* box-sizing: border-box; */
+        max-width: 500px;
+        margin: auto;
+        text-align: center;
+        padding-top: 10%;
+    }
+    #exampleSelect {
+        width: 400px;
+        height: 40px;
     }
 </style>
 <header>
@@ -27,6 +41,10 @@
             let headingDiv = document.createElement("div");
             headingDiv.id = "headingDiv";
             document.getElementsByTagName("body")[0].appendChild(headingDiv);
+
+            let headerTitle = document.createElement("h1");
+            headerTitle.innerHTML = "Lecture 5 Demos"
+            headingDiv.appendChild(headerTitle);
 
             let br = document.createElement("br");
             document.getElementsByTagName("body")[0].appendChild(br);
@@ -175,6 +193,7 @@
             // switch between different examples
             let currentExample;
             selectExample.onchange = function () {
+                document.getElementById("headingDiv").style.paddingTop = 0;
                 if (currentExample) currentExample.style.display = "none";
                 let selectedTitle = selectExample.options[selectExample.selectedIndex].text;
                 exampleDivs.forEach(ed => {

@@ -37,6 +37,12 @@ export class RunCanvas {
         this.br = document.createElement("br");
         this.br.id = canvasName + "-br";
 
+        this.title = document.createElement("p");
+        let node = document.createTextNode("Hit play to run the transformations");
+        this.title.appendChild(node);
+        this.title.style.marginTop = '5px';
+        this.title.style.marginBottom = '5px';
+
         this.range = document.createElement("input");
         this.range.id = canvasName + "-slider";
         this.range.setAttribute("type","range");
@@ -47,23 +53,43 @@ export class RunCanvas {
         this.text = document.createElement("input");
         this.text.id = canvasName+"-text";
         this.text.setAttribute("type","text");
-        this.text.style.width = "50";
+        this.text.style.width = "40";
         this.text.setAttribute("readonly","1");
 
         this.runbutton = document.createElement("input");
         this.runbutton.id=canvasName + "-run";
         this.runbutton.setAttribute("type","checkbox");
         this.runbutton.width=20;
+        this.runbutton.style.display = 'none';
+
+        this.playicon = document.createElement("label");
+        this.playicon.id = canvasName + "-play";
+        this.playicon.setAttribute("for", canvasName+"-run");
+        this.playicon.setAttribute("class", "fas fa-play-circle fa-lg");
+        this.playicon.style.marginRight='5';
+        // this.playicon.style.marginLeft='5';
+        this.playicon.style.color = "blue";
      
         insertAfter(this.br, this.canvas);
         insertAfter(this.runbutton, this.br);
+        insertAfter(this.playicon, this.br);
+        insertAfter(this.title, this.br);
         insertAfter(this.text, this.runbutton);
         insertAfter(this.range,this.text);
 
         let self = this;
+        let play = "fas fa-play-circle fa-lg";
+        let pause = "fas fa-pause-circle fa-lg";
         this.runbutton.onchange = function () { 
-            if (self.noloop && Number(self.range.value)>=1) {
+            if (self.runbutton.checked) {
+                self.playicon.setAttribute("class", pause)
+            } else {
+                self.playicon.setAttribute("class", play)
+            }
+
+            if (self.noloop && Number(self.range.value)>=Number(self.range.max)) {
                 self.setValue(0);
+                // self.playicon.setAttribute("class", pause);
             }
             self.advance(); 
         };
@@ -101,6 +127,7 @@ export class RunCanvas {
         if (this.noloop) {
             if (value >= maxV) {
                 this.runbutton.checked = false;
+                this.playicon.setAttribute("class", "fas fa-play-circle fa-lg");
             }
             value = Math.min(maxV,value);
         } else {
