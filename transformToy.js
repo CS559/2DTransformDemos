@@ -497,6 +497,8 @@ export function createExample(title, transforms = undefined) {
         document.getElementById(canvasName + "-text").style.display = "none";
         document.getElementById(canvasName + "-run").style.display = "none";
         document.getElementById(canvasName + "-br").style.display = "none";
+        document.getElementById(canvasName + "-play").style.display = "none";
+        document.getElementById(canvasName + "-title").style.display = "none";
     }
 
     if (transforms) {
