@@ -292,79 +292,85 @@ export function makeSelect(values, where, initial) {
     return select;
 }
 
+
+
 /**
  * Create a transformation example
  * @param {string} title 
  * @param {Array} transforms 
  */
 export function createExample(title, transforms = undefined) {
+    // useful strings
+    const exampleCSS = "display: none; align-items: flex-start; justify-content: center; margin: auto;";
+    const codeCSS = "font-family: 'Courier New', Courier, monospace; " +
+    "font-size: 120%; padding-top: 5px; padding-bottom: 20px";
+
     // make sure each canvas has a different name
     let canvasName = title;
 
     // division to hold the example 
     let exampleDiv = document.createElement("div");
     exampleDiv.id = canvasName + "-example";
-    exampleDiv.style.cssText = "display: none; align-items: flex-start; justify-content: center; margin: auto;";
+    exampleDiv.style.cssText = exampleCSS;
     document.getElementsByTagName("body")[0].appendChild(exampleDiv);
 
     // left part, including a canvas, checkboxes, a slider, and a code block
     let leftDiv = document.createElement("div");
     leftDiv.id = canvasName + "-leftDiv";
     leftDiv.style.cssText = "padding-right: 30px";
-    document.getElementById(exampleDiv.id).appendChild(leftDiv);
+    exampleDiv.appendChild(leftDiv);
 
     let leftHeader = document.createElement("h2");
     leftHeader.innerHTML = "Transformation Panel";
     leftHeader.id = canvasName + "-leftHeader";
     leftHeader.style.cssText = "text-align: center";
-    document.getElementById(leftDiv.id).appendChild(leftHeader);
+    leftDiv.appendChild(leftHeader);
 
     let leftCanvas = document.createElement("canvas");
     leftCanvas.width = 400;
     leftCanvas.height = 400;
     leftCanvas.id = canvasName;
-    document.getElementById(leftDiv.id).appendChild(leftCanvas);
+    leftDiv.appendChild(leftCanvas);
 
     let leftPanel = document.createElement("div");
     leftPanel.id = canvasName + "-leftPanel";
-    document.getElementById(leftDiv.id).appendChild(leftPanel);
+    leftDiv.appendChild(leftPanel);
 
     // checkbox and label for reversion
     let dirTog = document.createElement("input");
     dirTog.setAttribute("type", "checkbox");
     dirTog.id = canvasName + "-dt";
-    document.getElementById(leftPanel.id).appendChild(dirTog);
+    leftPanel.appendChild(dirTog);
 
     let dirLabel = document.createElement("label");
     dirLabel.setAttribute("for", dirTog.id);
     dirLabel.innerText = "Run the transformations in the reverse order";
-    document.getElementById(leftPanel.id).appendChild(dirLabel);
+    leftPanel.appendChild(dirLabel);
 
     let leftBrOne = document.createElement("br");
     leftBrOne.id = canvasName + "-leftBr2";
-    document.getElementById(leftPanel.id).appendChild(leftBrOne);
+    leftPanel.appendChild(leftBrOne);
 
     // checkbox and label for showing the final result
     let resultTog = document.createElement("input");
     resultTog.setAttribute("type", "checkbox");
     resultTog.setAttribute("checked", "true");
     resultTog.id = canvasName + "-rt";
-    document.getElementById(leftPanel.id).appendChild(resultTog);
+    leftPanel.appendChild(resultTog);
 
     let resultLabel = document.createElement("label");
     resultLabel.setAttribute("for", resultTog.id);
     resultLabel.innerText = "Show the final result on the right";
-    document.getElementById(leftPanel.id).appendChild(resultLabel);
+    leftPanel.appendChild(resultLabel);
 
     let leftCodeDiv = document.createElement("div");
-    leftCodeDiv.style.cssText = "font-family: 'Courier New', Courier, monospace; " +
-        "font-size: 120%; padding-top: 5px; padding-bottom: 20px";
-    document.getElementById(leftDiv.id).appendChild(leftCodeDiv);
+    leftCodeDiv.style.cssText = codeCSS;
+    leftDiv.appendChild(leftCodeDiv);
 
     // right part, including a canvas, a code block
     let rightDiv = document.createElement("div");
     rightDiv.id = canvasName + "-rightDiv";
-    document.getElementById(exampleDiv.id).appendChild(rightDiv);
+    exampleDiv.appendChild(rightDiv);
 
     let rightHeader = document.createElement("h2");
     rightHeader.innerHTML = "Final Result";
