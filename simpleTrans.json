@@ -1,0 +1,11 @@
+[
+    {
+        "title": "A Rectangle",
+        "transformations": [
+            ["fillRect", 0, 0, 30, 30, "red"]
+        ]
+    },
+    {
+        "title": "Your turn to play with it"
+    }
+]
