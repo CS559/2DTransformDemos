@@ -28,8 +28,6 @@ fetch(filename).then(response => response.json())
     .catch(error => console.log(`Error loading ${filename} - ${error}`));
 
 function selectAndGo(examples) {
-    console.log(examples);
-
     let titles = ["Please select one example"];
     let exampleDivs = [];
     examples.forEach(e => {
