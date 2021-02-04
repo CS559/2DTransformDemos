@@ -1,25 +1,4 @@
-<html>
-<style>
-    .c-zero {
-        color: lightgray;
-    }
-
-    .c-act {
-        color: red;
-    }
-
-    .c-one {
-        color: black;
-    }
-</style>
-<header>
-    <link rel="stylesheet" href="Libs/style559.css">
-</header>
-
-<body>
-<<<<<<< Updated upstream
-    <script type="module">
-        import { createExample, makeSelect } from "./transformToy.js";
+import { createExample, makeSelect } from "./transformToy.js";
 
         /**
          * Set up the demo
@@ -28,6 +7,10 @@
             let headingDiv = document.createElement("div");
             headingDiv.id = "headingDiv";
             document.getElementsByTagName("body")[0].appendChild(headingDiv);
+
+            let headerTitle = document.createElement("h1");
+            headerTitle.innerHTML = "2D Transformation Toy"
+            headingDiv.appendChild(headerTitle);
 
             let br = document.createElement("br");
             document.getElementsByTagName("body")[0].appendChild(br);
@@ -58,8 +41,8 @@
                         [
                             ["triangle", 0, 0, "red"],
                             ["translate", 20, 0],
-                            ["triangle", 0, 0],
-                            ["triangle", 10, 10]
+                            ["triangle", 0, 0, "blue"],
+                            ["triangle", 10, 10, "blue"]
                         ]
                 }, {
                     title: "NU Scale and then rotate",
@@ -162,6 +145,7 @@
             // switch between different examples
             let currentExample;
             selectExample.onchange = function () {
+                document.getElementById("headingDiv").style.paddingTop = 0;
                 if (currentExample) currentExample.style.display = "none";
                 let selectedTitle = selectExample.options[selectExample.selectedIndex].text;
                 exampleDivs.forEach(ed => {
@@ -169,13 +153,8 @@
                         currentExample = ed;
                     }
                 });
-                if (currentExample) currentExample.style.display = "flex";
+                if (currentExample){ 
+                    currentExample.style.display = "flex";
+                }
             };
         }
-    </script>
-=======
-    <script type="module" src="./selector.js"></script>
->>>>>>> Stashed changes
-</body>
-
-</html>

@@ -496,8 +496,23 @@ export function createExample(title, transforms = undefined) {
         customDiv.id = canvasName + "-custom";
         insertAfter(customDiv, leftPanel);
 
+        // explanation title
+        let title = document.createElement("p");
+        title.id = canvasName + "-instruction";
+        title.innerHTML = "Construct your own code segment of transformations <br>"
+        + "You can: <br>"
+        + "<b>Add</b> a command by selecting it from the dropbox<br>"
+        + "<b>Delete</b> the last command in your code segment <br>"
+        + "<b>Run</b> the code segement to animate the transformation <br>"
+        + "<b>Reset</b> all commands";
+        // let node = document.createTextNode("Construct your own code segment of transformations");
+        // title.appendChild(node);
+        title.style.marginTop = '0';
+        title.style.marginBottom = '0';
+        customDiv.appendChild(title);
+
         // a dropdown menu used to select a command
-        let select = makeSelect(["Please select one transform", "translate", "scale", 
+        let select = makeSelect(["Please select one command", "translate", "scale", 
         "rotate", "fillRect", "save", "restore"], customDiv);
         select.id = canvasName + "-select";
         select.style.cssText = "margin-bottom: 5px; margin-top: 10px";
@@ -532,7 +547,15 @@ export function createExample(title, transforms = undefined) {
 
         rightCodeDiv.style.paddingTop = "38px";
 
+        // prompt for parameters
+        let prompt = document.createElement("p");
+        prompt.id = canvasName + "-prompt";
+        prompt.innerHTML = "Set the parameters of your command";
+        prompt.style.cssText = "margin: 0";
+        customDiv.appendChild(prompt);
+
         // initially hide the panels
+        prompt.style.display = "none";
         leftPanel.style.display = "none";
         rightPanel.style.display = "none";
 
@@ -576,6 +599,9 @@ export function createExample(title, transforms = undefined) {
         };
 
         runButton.onclick = function () {
+            // hide prompt
+            document.getElementById(canvasName + "-prompt").style.display = "none";
+
             // hide the sliders and reverse toggle
             hideSliders(customCommand);
             hideDirTog(customTransformList);
@@ -597,16 +623,23 @@ export function createExample(title, transforms = undefined) {
                 deleteButton.disabled = true;
                 select.disabled = true;
                 running = true;
+                document.getElementById(canvasName + "-instruction").style.display = "none";
             }
             // console.log(customTransformList);
         };
 
         resetButton.onclick = function () {
+            // reset the instructions
+            document.getElementById(canvasName + "-instruction").style.display = "block";
+            // reset the prompt
+            document.getElementById(canvasName + "-prompt").style.display = "none";
             // reset the drop down menu
             select.options[0].selected = true;
             // clear the code divisions
             leftCodeDiv.innerHTML = "";
             rightCodeDiv.innerHTML = "";
+            document.getElementById(canvasName + "-play").style.display = "none";
+            document.getElementById(canvasName + "title").style.display = "none";
             // hide the sliders if there are any
             hideSliders(customCommand);
             leftPanel.style.display = "none";
@@ -631,6 +664,8 @@ export function createExample(title, transforms = undefined) {
             let command = select.options[select.selectedIndex].text;
             // hide the sliders if there are any
             hideSliders(customCommand);
+            document.getElementById(canvasName + "-prompt").style.display = "block";
+
             // create sliders and transformation command based on the selected option
             if (command == "translate") {
                 // each slider corresponds to a parameter
