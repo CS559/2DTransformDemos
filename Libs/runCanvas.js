@@ -65,12 +65,9 @@ export class RunCanvas {
 
         this.playicon = document.createElement("label");
         this.playicon.id = canvasName + "-play";
-        this.playicon.setAttribute("for", canvasName+"-run");
-        // this.playicon.setAttribute("class", "fas fa-play-circle fa-lg");
+        this.playicon.setAttribute("for", canvasName + "-run");
         this.playicon.style.marginRight='5';
-        // this.playicon.style.marginLeft='5';
-        this.playicon.style.color = "blue";
-        this.playicon.style.cssText = "margin-right: 5;";
+        this.playicon.style.cssText = "margin-right: 5px;" ;
 
         this.playimage = document.createElement("img");
         this.playimage.id = "play";
@@ -80,6 +77,7 @@ export class RunCanvas {
      
         insertAfter(this.br, this.canvas);
         insertAfter(this.runbutton, this.br);
+        insertAfter(this.playicon, this.br);
         insertAfter(this.text, this.runbutton);
         insertAfter(this.range,this.text);
 
