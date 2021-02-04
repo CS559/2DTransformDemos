@@ -37,8 +37,6 @@ export class RunCanvas {
         this.br = document.createElement("br");
         this.br.id = canvasName + "-br";
 
-<<<<<<< Updated upstream
-=======
         this.title = document.createElement("p");
         this.title.id = canvasName + "title";
         let node = document.createTextNode("Hit play to run the transformations");
@@ -46,7 +44,6 @@ export class RunCanvas {
         this.title.style.marginTop = '5px';
         this.title.style.marginBottom = '5px';
 
->>>>>>> Stashed changes
         this.range = document.createElement("input");
         this.range.id = canvasName + "-slider";
         this.range.setAttribute("type","range");
@@ -64,8 +61,6 @@ export class RunCanvas {
         this.runbutton.id=canvasName + "-run";
         this.runbutton.setAttribute("type","checkbox");
         this.runbutton.width=20;
-<<<<<<< Updated upstream
-=======
         this.runbutton.style.display = 'none';
 
         this.playicon = document.createElement("label");
@@ -82,7 +77,6 @@ export class RunCanvas {
         this.playimage.setAttribute("src", "./images/play-button.png");
         this.playimage.style.cssText = "width: 20px; height: 20px; ";
         this.playicon.appendChild(this.playimage);
->>>>>>> Stashed changes
      
         insertAfter(this.br, this.canvas);
         insertAfter(this.runbutton, this.br);
@@ -90,10 +84,6 @@ export class RunCanvas {
         insertAfter(this.range,this.text);
 
         let self = this;
-<<<<<<< Updated upstream
-        this.runbutton.onchange = function () { 
-            if (self.noloop && Number(self.range.value)>=1) {
-=======
         let play = "./images/play-button.png";
         let pause = "./images/pause-button.png";
         this.runbutton.onchange = function () { 
@@ -104,7 +94,6 @@ export class RunCanvas {
             }
 
             if (self.noloop && Number(self.range.value)>=Number(self.range.max)) {
->>>>>>> Stashed changes
                 self.setValue(0);
             }
             self.advance(); 
@@ -143,10 +132,7 @@ export class RunCanvas {
         if (this.noloop) {
             if (value >= maxV) {
                 this.runbutton.checked = false;
-<<<<<<< Updated upstream
-=======
                 this.playimage.setAttribute("src", "./images/play-button.png");
->>>>>>> Stashed changes
             }
             value = Math.min(maxV,value);
         } else {
