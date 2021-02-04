@@ -38,7 +38,7 @@ export class RunCanvas {
         this.br.id = canvasName + "-br";
 
         this.title = document.createElement("p");
-        this.title.id = canvasName + "title";
+        this.title.id = canvasName + "-title";
         let node = document.createTextNode("Hit play to run the transformations");
         this.title.appendChild(node);
         this.title.style.marginTop = '5px';
@@ -78,6 +78,7 @@ export class RunCanvas {
         insertAfter(this.br, this.canvas);
         insertAfter(this.runbutton, this.br);
         insertAfter(this.playicon, this.br);
+        insertAfter(this.title, this.br);
         insertAfter(this.text, this.runbutton);
         insertAfter(this.range,this.text);
 

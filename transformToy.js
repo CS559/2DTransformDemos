@@ -651,7 +651,7 @@ export function createExample(title, transforms = undefined) {
             leftCodeDiv.innerHTML = "";
             rightCodeDiv.innerHTML = "";
             document.getElementById(canvasName + "-play").style.display = "none";
-            document.getElementById(canvasName + "title").style.display = "none";
+            document.getElementById(canvasName + "-title").style.display = "none";
             // hide the sliders if there are any
             hideSliders(customCommand);
             leftPanel.style.display = "none";
