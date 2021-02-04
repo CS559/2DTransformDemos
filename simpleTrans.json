@@ -1,8 +1,48 @@
 [
     {
-        "title": "A Rectangle",
+        "title": "A Square At The Origin",
         "transformations": [
-            ["fillRect", 0, 0, 30, 30, "red"]
+            ["fillRect", -10, -10, 20, 20, "red"]
+        ]
+    },
+    {   
+        "title": "A Square Not At The Origin",
+        "transformations": [
+            ["fillRect", 20,20, 20,20, "red"]
+        ]
+    },
+    {
+        "title": "Place by Translation",
+        "transformations": [
+            ["translate",30,30],
+            ["fillRect",-10,-10,20,20,"red"]
+        ]
+    },
+    {
+        "title": "Same Square, 2 Ways",
+        "transformations": [
+            ["fillRect",20,20,20,20,"blue"],
+            ["translate",30,30],
+            ["fillRect",-10,-10,20,20,"red"]
+        ]
+    },
+    {
+        "title": "Same Square, 2 Ways, Not Centered",
+        "transformations": [
+            ["fillRect",20,20,20,20,"blue"],
+            ["translate",20,20],
+            ["fillRect",0,0,20,20,"red"]
+        ]
+    },
+    {
+        "title": "Translations Add Up",
+        "transformations":[
+            ["translate",20,0],
+            ["translate",0,20],
+            ["fillRect",0,0,20,20,"red"],
+            ["translate",-20,-20],
+            ["fillRect",0,0,20,20,"blue"]
+
         ]
     },
     {
