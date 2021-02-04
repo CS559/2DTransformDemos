@@ -304,7 +304,7 @@ export function createExample(title, transforms = undefined) {
     // division to hold the example 
     let exampleDiv = document.createElement("div");
     exampleDiv.id = canvasName + "-example";
-    exampleDiv.style.cssText = "display: none; align-items: flex-start";
+    exampleDiv.style.cssText = "display: none; align-items: flex-start; justify-content: center; margin: auto;";
     document.getElementsByTagName("body")[0].appendChild(exampleDiv);
 
     // left part, including a canvas, checkboxes, a slider, and a code block
@@ -312,6 +312,12 @@ export function createExample(title, transforms = undefined) {
     leftDiv.id = canvasName + "-leftDiv";
     leftDiv.style.cssText = "padding-right: 30px";
     document.getElementById(exampleDiv.id).appendChild(leftDiv);
+
+    let leftHeader = document.createElement("h2");
+    leftHeader.innerHTML = "Transformation Panel";
+    leftHeader.id = canvasName + "-leftHeader";
+    leftHeader.style.cssText = "text-align: center";
+    document.getElementById(leftDiv.id).appendChild(leftHeader);
 
     let leftCanvas = document.createElement("canvas");
     leftCanvas.width = 400;
@@ -331,7 +337,7 @@ export function createExample(title, transforms = undefined) {
 
     let dirLabel = document.createElement("label");
     dirLabel.setAttribute("for", dirTog.id);
-    dirLabel.innerText = "Reverse";
+    dirLabel.innerText = "Run the transformations in the reverse order";
     document.getElementById(leftPanel.id).appendChild(dirLabel);
 
     let leftBrOne = document.createElement("br");
@@ -347,18 +353,24 @@ export function createExample(title, transforms = undefined) {
 
     let resultLabel = document.createElement("label");
     resultLabel.setAttribute("for", resultTog.id);
-    resultLabel.innerText = "Show the final result";
+    resultLabel.innerText = "Show the final result on the right";
     document.getElementById(leftPanel.id).appendChild(resultLabel);
 
     let leftCodeDiv = document.createElement("div");
     leftCodeDiv.style.cssText = "font-family: 'Courier New', Courier, monospace; " +
-        "font-size: 120%; padding-top: 5px";
+        "font-size: 120%; padding-top: 5px; padding-bottom: 20px";
     document.getElementById(leftDiv.id).appendChild(leftCodeDiv);
 
     // right part, including a canvas, a code block
     let rightDiv = document.createElement("div");
     rightDiv.id = canvasName + "-rightDiv";
     document.getElementById(exampleDiv.id).appendChild(rightDiv);
+
+    let rightHeader = document.createElement("h2");
+    rightHeader.innerHTML = "Final Result";
+    rightHeader.id = canvasName + "-rightHeader";
+    rightHeader.style.cssText = "text-align: center";
+    document.getElementById(rightDiv.id).appendChild(rightHeader);
 
     let rightCanvas = document.createElement("canvas");
     rightCanvas.width = 400;
@@ -400,7 +412,7 @@ export function createExample(title, transforms = undefined) {
 
     let rightCodeDiv = document.createElement("div");
     rightCodeDiv.style.cssText = "font-family: 'Courier New', Courier, monospace; " +
-        "font-size: 120%; padding-top: 5px";
+        "font-size: 120%; padding-top: 5px; padding-bottom: 20px;";
     document.getElementById(rightDiv.id).appendChild(rightCodeDiv);
 
     /**
@@ -475,7 +487,7 @@ export function createExample(title, transforms = undefined) {
         dirLabel.style.color = "black";
     }
 
-    /**
+ /**
      * Reset the running canvas
      */
     function reset() {
