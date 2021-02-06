@@ -344,7 +344,7 @@ export function createExample(title, transforms = undefined) {
 
     let dirLabel = document.createElement("label");
     dirLabel.setAttribute("for", dirTog.id);
-    dirLabel.innerText = "Run the transformations in the reverse order";
+    dirLabel.innerText = "Run the program backwards (from the end to the slider)";
     leftPanel.appendChild(dirLabel);
 
     let leftBrOne = document.createElement("br");
