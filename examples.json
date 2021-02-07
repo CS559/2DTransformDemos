@@ -54,6 +54,17 @@
         ]
     },
     {
+        "title": "Rotate about object center",
+        "transformations":
+            [
+                ["fillRect", 20, 20, 40, 40, "red"],
+                ["translate", 40, 40],
+                ["rotate", 45],
+                ["translate", -40, -40],
+                ["fillRect", 20, 20, 40, 40, "blue"]
+            ]
+    },
+    {
         "title": "Scale about a 45 degrees Axis",
         "transformations":
             [
@@ -109,16 +120,8 @@
                 ["rotate", 45],
                 ["fillRect", 0, 0, 10, 10, "green"]
             ]
-    }, {
-        "title": "Rotate about object center",
-        "transformations":
-            [
-                ["translate", 30, 30],
-                ["rotate", 45],
-                ["translate", -30, -30],
-                ["fillRect", 20, 20, 40, 40]
-            ]
-    }, {
+    }, 
+    {
         "title": "Save and restore",
         "transformations":
             [
