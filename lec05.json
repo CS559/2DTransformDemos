@@ -1,0 +1,153 @@
+[
+    {
+        "title" : "triangles with translation",
+        "transformations" : [
+            ["triangle",0,0,"red"],
+            ["translate",20,0],
+            ["triangle",0,0,"blue"],
+            ["translate",0,20],
+            ["triangle",0,0,"green"]
+        ]
+    },
+    {
+        "title" : "triangles with save/restore",
+        "transformations" : [
+            ["triangle",0,0,"red"],
+            ["save"],
+            ["translate",20,0],
+            ["triangle",0,0,"blue"],
+            ["restore"],
+            ["save"],
+            ["translate",20,20],
+            ["triangle",0,0,"green"],
+            ["restore"]
+        ]
+    },
+    {
+        "title": "Simple Scale",
+        "transformations": [
+            ["scale",2,2],
+            ["fillRect",0,0,20,20,"red"]
+        ]
+    },
+    {
+        "title": "Multiple Simple Scales",
+        "transformations": [
+            ["scale",4,4],
+            ["fillRect",0,0,10,10,"blue"],
+            ["scale",0.5,0.5],
+            ["fillRect",0,0,10,10,"red"]
+        ]
+    },
+    {
+        "title": "Translate then scale",
+        "transformations": [
+            ["translate",20,20],
+            ["scale",2,2],
+            ["fillRect",0,0,10,10,"red"]
+        ]
+    },
+    {
+        "title": "Scale then translate",
+        "transformations": [
+            ["scale",2,2],
+            ["translate",20,20],
+            ["fillRect",0,0,10,10,"red"]
+        ]
+    },
+    {
+        "title": "Compare Scale/Trans with Trans/Scale",
+        "transformations": [
+            ["save"],
+            ["translate",20,20],
+            ["scale",2,2],
+            ["fillRect",0,0,10,10,"blue"],
+            ["restore"],
+            ["scale",2,2],
+            ["translate",20,20],
+            ["fillRect",0,0,10,10,"red"]
+        ]
+    },
+    {
+        "title": "Center of Scaling",
+        "transformations": [
+            ["fillRect",10,10,20,20,"red"],
+            ["translate",20,20],
+            ["scale",2,2],
+            ["translate",-20,-20],
+            ["fillRect",10,10,20,20,"#0000FF80"]
+        ]
+    },
+    {
+        "title": "Rotate (1 object)",
+        "transformations" : [
+            ["rotate",45],
+            ["fillRect",0,0,20,20,"red"]
+        ]
+    },
+    {
+        "title": "Rotate (2 objects)",
+        "transformations" : [
+            ["fillRect",-10,-10,20,20,"#FF000080"],
+            ["fillRect", 40,-10,20,20,"#0000FF80"],
+            ["rotate",45],
+            ["fillRect",-10,-10,20,20,"#FF000080"],
+            ["fillRect", 40,-10,20,20,"#0000FF80"]
+        ]
+
+    },
+    {
+        "title": "Rotate about object center",
+        "transformations":
+            [
+                ["fillRect", 20, 20, 40, 40, "red"],
+                ["translate", 40, 40],
+                ["rotate", 45],
+                ["translate", -40, -40],
+                ["fillRect", 20, 20, 40, 40, "blue"]
+            ]
+    },
+    {
+        "title": "Rotate (2 objects) around centers",
+        "transformations" : [
+            ["save"],
+            ["fillRect",-10,-10,20,20,"#FF000080"],
+            ["rotate",45],
+            ["fillRect",-10,-10,20,20,"#FF000080"],
+            ["restore"],
+            ["save"],
+            ["fillRect", 40,-10,20,20,"#0000FF80"],
+            ["translate",50,0],
+            ["rotate",45],
+            ["translate",-50,0],
+            ["fillRect", 40,-10,20,20,"#0000FF80"],
+            ["restore"]
+        ]
+    },
+    {
+        "title": "Scale about a 45 degrees Axis",
+        "transformations":
+            [
+                ["rotate", 45],
+                ["scale", 2, 1],
+                ["rotate", -45],
+                ["fillRect", -10, -10, 20, 20, "#F0000080"]
+            ]
+    },
+    {
+        "title": "Bend an arm 45 degrees at Elbow and Wrist",
+        "transformations":
+            [
+                ["fillRect", 0, 0, 20, 10, "purple"],
+                ["translate", 20, 0],
+                ["rotate", 45],
+                ["fillRect", 0, 0, 20, 10, "blue"],
+                ["translate", 20, 0],
+                ["rotate", 45],
+                ["fillRect", 0, 0, 10, 10, "green"]
+            ]
+    },    
+    {
+        "title": "Your turn to play with it"
+    }
+]
