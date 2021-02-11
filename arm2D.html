@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+        
+        svg {
+            border: 1px solid black;
+        }        
+        input[type=range] {
+            width: 100px;
+        }
+    </style>
+</head>
+
+<body>
+    <span style="width:105px;display:inline-block"> </span>
+    <canvas id="canvas1" width="200" height="100"></canvas>
+    <p>
+        Wrist Coordinate system - the hand is in the translated along the arm.
+    </p>
+    <input id="slider1" type="range" min="-1" max="1" step=".05" />
+    <canvas id="canvas2" width="200" height="100"></canvas>
+    <p>
+        Upper Arm Coordinate System - the elbow is translated along the arm
+    </p>
+    <input id="slider2" type="range" min="-1" max="1" step=".05" />
+    <canvas id="canvas3" width="200" height="100"></canvas>
+    <p>
+        Torso.
+    </p>
+    <input id="slider3" type="range" min="-1" max="1" step=".05" />
+    <canvas id="canvas4" width="200" height="150"></canvas>
+
+
+    <script src="arm2D.js" type="module" defer></script>
+</body>
+
+</html>
+
