@@ -1,0 +1,27 @@
+[
+    {
+        "title": "Unbent Arm",
+        "transformations":
+            [
+                ["fillRect", 0, 0, 20, 10, "purple"],
+                ["translate", 20, 0],
+                ["fillRect", 0, 0, 20, 10, "blue"],
+                ["translate", 20, 0],
+                ["fillRect", 0, 0, 10, 10, "green"]
+            ]
+
+    },
+    {
+        "title": "Bend an arm 45 degrees at Elbow and Wrist",
+        "transformations":
+            [
+                ["fillRect", 0, 0, 20, 10, "purple"],
+                ["translate", 20, 0],
+                ["rotate", 45],
+                ["fillRect", 0, 0, 20, 10, "blue"],
+                ["translate", 20, 0],
+                ["rotate", 45],
+                ["fillRect", 0, 0, 10, 10, "green"]
+            ]
+    }    
+]
