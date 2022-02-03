@@ -46,6 +46,30 @@
         ]
     },
     {
+        "title" : "triangles with translation",
+        "transformations" : [
+            ["triangle",0,0,"red"],
+            ["translate",20,0],
+            ["triangle",0,0,"blue"],
+            ["translate",0,20],
+            ["triangle",0,0,"green"]
+        ]
+    },
+    {
+        "title" : "triangles with save/restore",
+        "transformations" : [
+            ["triangle",0,0,"red"],
+            ["save"],
+            ["translate",20,0],
+            ["triangle",0,0,"blue"],
+            ["restore"],
+            ["save"],
+            ["translate",20,20],
+            ["triangle",0,0,"green"],
+            ["restore"]
+        ]
+    },
+    {
         "title": "Your turn to play with it"
     }
 ]

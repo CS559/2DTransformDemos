@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+    <!-- simple demo of mouse over -->
+    <head>
+        <title>Mouse over canvas demo</title>
+    </head>
+    <body>
+        <canvas id="myc" width="200px" height="200px"
+        style="border:1px solid black">
+        </canvas>
+
+    </body>
+    <script type="module">
+        window.onload = function() {
+            let canvas = document.getElementById("myc");
+            let context = canvas.getContext("2d");
+        
+            canvas.onmousemove = function(event) {
+                let box = event.target.getBoundingClientRect();
+                let x = event.clientX - box.left;
+                let y = event.clientY - box.top;
+                context.fillStyle = "#80800080";
+                context.fillRect(x-5, y-5,10,10);
+            }
+            canvas.onclick = function() {
+                context.clearRect(0,0,canvas.height,canvas.width);
+            }
+        }
+    </script>
+</html>
