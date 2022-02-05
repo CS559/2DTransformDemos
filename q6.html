@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+    <!-- simple demo of mouse over -->
+    <head>
+        <title>Thin Lines Demo</title>
+    </head>
+    <body>
+        <canvas id="myc" width="200px" height="200px"
+        style="border:1px solid black">
+        </canvas>
+
+    </body>
+    <script type="module">
+        window.onload = function() {
+            let canvas = document.getElementById("myc");
+            let context = canvas.getContext("2d");
+        
+            // this is the updated EOW Survey 2 Question 6
+            context.beginPath();
+            context.lineWidth = 2;
+            context.strokeStyle = "blue";
+            context.moveTo(20,20);
+            context.lineTo(20,80);
+            context.stroke();
+            context.strokeStyle = "black";
+            context.moveTo(80,20);
+            context.lineTo(80,80);
+            context.stroke();
+
+            // draw the original to the right of it
+            context.translate(100,0);
+            context.lineWidth = 1;
+            // this is the original
+            context.beginPath();
+            context.strokeStyle = "blue";
+            context.moveTo(20,20);
+            context.lineTo(20,80);
+            context.stroke();
+            context.strokeStyle = "black";
+            context.moveTo(80,20);
+            context.lineTo(80,80);
+            context.stroke();
+
+            // the thin lines look thick because there are "in between" 2 pixels
+            // this might be more like what was intended
+            context.translate(0.5,100);
+            // this is the original
+            context.beginPath();
+            context.strokeStyle = "blue";
+            context.moveTo(20,20);
+            context.lineTo(20,80);
+            context.stroke();
+            context.strokeStyle = "black";
+            context.moveTo(80,20);
+            context.lineTo(80,80);
+            context.stroke();
+
+        }
+    </script>
+</html>
