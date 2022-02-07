@@ -6,27 +6,53 @@
     </head>
     <body>
         <canvas id="myc" width="200px" height="200px"
-        style="border:20px solid black; box-sizing:content-box">
+        style="border:20px solid black;">
         </canvas>
+
+
+        <canvas id="myc2" width="200px" height="200px"
+        style="border:20px solid black;">
+        </canvas>
+
+        <br />
+        <br />
+        <canvas id="myc3" width="200px" height="200px"
+        style="border:20px solid black; margin:20px">
+        </canvas>
+
+
+        <canvas id="myc4" width="200px" height="200px"
+        style="border:20px solid black; padding:20px">
+        </canvas>
+
+
 
     </body>
     <script type="module">
         window.onload = function() {
-            let canvas = document.getElementById("myc");
-            let context = canvas.getContext("2d");
+            ;
         
-            canvas.onmousemove = function(event) {
-                let x = event.clientX - event.target.clientLeft;
-                let y = event.clientY - event.target.clientTop;
-                context.fillStyle = "#80800080";
-                context.fillRect(x-5, y-5,10,10);
+            function setExp(canvas) {
+                canvas.onmousemove = function(event) {
+                    let box = event.target.getBoundingClientRect();
+                    let context = canvas.getContext("2d");
+                    let x = event.clientX - box.left - event.target.clientLeft;
+                    let y = event.clientY - box.top - event.target.clientTop;
+                    context.fillStyle = "#80800080";
+                    context.fillRect(x-5, y-5,10,10);
+                }
+                canvas.onclick = function() {
+                    let context = canvas.getContext("2d");
+                    context.clearRect(0,0,canvas.height,canvas.width);
+                    let box = event.target.getBoundingClientRect();
+                    console.log(box);
+                    console.log(event.target.clientLeft, event.target.clientTop,event.target.clientWidth,event.target.clientHeight);
+                }
             }
-            canvas.onclick = function() {
-                context.clearRect(0,0,canvas.height,canvas.width);
-                let box = event.target.getBoundingClientRect();
-                console.log(box);
-                console.log(event.target.clientLeft, event.target.clientTop,event.target.clientWidth,event.target.clientHeight);
-            }
+            setExp(document.getElementById("myc"))
+            setExp(document.getElementById("myc2"))
+            setExp(document.getElementById("myc3"))
+            setExp(document.getElementById("myc4"))
         }
     </script>
 </html>
