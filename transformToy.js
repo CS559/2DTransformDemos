@@ -171,7 +171,9 @@ function doTransform(context, transformList, param, direction = 1) {
                 context.restore();
             }
             html += stylize(amt, `context.fillStyle="${color}"`);
-            html += stylize(amt, `triangle(context,${t[1]},${t[2]},${t[3]});`);
+            // because we use fill style, we don't need to show color
+            // html += stylize(amt, `triangle(context,${t[1]},${t[2]},${t[3]});`);
+            html += stylize(amt, `triangle(context,${t[1]},${t[2]});`);
         } else if (command == "save") {
             if (amt > 0) {
                 transformStack.push(context.getTransform());
