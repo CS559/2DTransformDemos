@@ -1,0 +1,77 @@
+[
+    {
+        "title": "Scale about a 45 degrees Axis",
+        "transformations":
+            [
+                ["fillRect", -10, -10, 20, 20, "red"],
+                ["rotate", 45],
+                ["scale", 2, 1],
+                ["rotate", -45],
+                ["fillRect", -10, -10, 20, 20, "#F0000080"]
+            ]
+    },
+    {
+        "title": "Rotate (2 objects)",
+        "transformations" : [
+            ["fillRect",-10,-10,20,20,"#FF000080"],
+            ["fillRect", 40,-10,20,20,"#0000FF80"],
+            ["rotate",45],
+            ["fillRect",-10,-10,20,20,"#FF000080"],
+            ["fillRect", 40,-10,20,20,"#0000FF80"]
+        ]
+
+    },
+    {
+        "title": "Rotate about object center",
+        "transformations":
+            [
+                ["fillRect", 20, 20, 40, 40, "red"],
+                ["translate", 40, 40],
+                ["rotate", 45],
+                ["translate", -40, -40],
+                ["fillRect", 20, 20, 40, 40, "blue"]
+            ]
+    },
+    {
+        "title": "Rotate (2 objects) around centers",
+        "transformations" : [
+            ["save"],
+            ["fillRect",-10,-10,20,20,"#FF000080"],
+            ["rotate",45],
+            ["fillRect",-10,-10,20,20,"#FF000080"],
+            ["restore"],
+            ["save"],
+            ["fillRect", 40,-10,20,20,"#0000FF80"],
+            ["translate",50,0],
+            ["rotate",45],
+            ["translate",-50,0],
+            ["fillRect", 40,-10,20,20,"#0000FF80"],
+            ["restore"]
+        ]
+    },
+    {
+        "title": "Unbent Arm",
+        "transformations":
+            [
+                ["fillRect", 0, 0, 20, 10, "purple"],
+                ["translate", 20, 0],
+                ["fillRect", 0, 0, 20, 10, "blue"],
+                ["translate", 20, 0],
+                ["fillRect", 0, 0, 10, 10, "green"]
+            ]
+
+    },
+    {
+        "title": "Bend an arm 45 degrees at Elbow and Wrist",
+        "transformations":
+            [
+                ["fillRect", 0, 0, 20, 10, "purple"],
+                ["translate", 20, 0],
+                ["rotate", 45],
+                ["fillRect", 0, 0, 20, 10, "blue"],
+                ["translate", 20, 0],
+                ["rotate", 45],
+                ["fillRect", 0, 0, 10, 10, "green"]
+            ]
+    }    
+]
