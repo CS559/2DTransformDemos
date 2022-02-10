@@ -3,7 +3,7 @@
         "title": "Scale about a 45 degrees Axis",
         "transformations":
             [
-                ["fillRect", -10, -10, 20, 20, "red"],
+                ["fillRect", -10, -10, 20, 20, "darkred"],
                 ["rotate", 45],
                 ["scale", 2, 1],
                 ["rotate", -45],
