@@ -1,9 +1,22 @@
 [
     {
+        "title": "Compare Scale/Trans with Trans/Scale",
+        "transformations": [
+            ["save"],
+            ["translate",20,20],
+            ["scale",2,2],
+            ["fillRect",0,0,10,10,"blue"],
+            ["restore"],
+            ["scale",2,2],
+            ["translate",20,20],
+            ["fillRect",0,0,10,10,"red"]
+        ]
+    },
+    {
         "title": "Scale about a 45 degrees Axis",
         "transformations":
             [
-                ["fillRect", -10, -10, 20, 20, "darkred"],
+                ["fillRect", -10, -10, 20, 20, "#400040"],
                 ["rotate", 45],
                 ["scale", 2, 1],
                 ["rotate", -45],
@@ -13,8 +26,8 @@
     {
         "title": "Rotate (2 objects)",
         "transformations" : [
-            ["fillRect",-10,-10,20,20,"#FF000080"],
-            ["fillRect", 40,-10,20,20,"#0000FF80"],
+            ["fillRect",-10,-10,20,20,"#400040"],
+            ["fillRect", 40,-10,20,20,"#004040"],
             ["rotate",45],
             ["fillRect",-10,-10,20,20,"#FF000080"],
             ["fillRect", 40,-10,20,20,"#0000FF80"]
@@ -36,12 +49,12 @@
         "title": "Rotate (2 objects) around centers",
         "transformations" : [
             ["save"],
-            ["fillRect",-10,-10,20,20,"#FF000080"],
+            ["fillRect",-10,-10,20,20,"#800000"],
             ["rotate",45],
             ["fillRect",-10,-10,20,20,"#FF000080"],
             ["restore"],
             ["save"],
-            ["fillRect", 40,-10,20,20,"#0000FF80"],
+            ["fillRect", 40,-10,20,20,"#000080"],
             ["translate",50,0],
             ["rotate",45],
             ["translate",-50,0],
