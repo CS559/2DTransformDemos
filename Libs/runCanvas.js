@@ -39,7 +39,7 @@ export class RunCanvas {
 
         this.title = document.createElement("p");
         this.title.id = canvasName + "-title";
-        let node = document.createTextNode("Hit play to run the transformations");
+        let node = document.createTextNode("");
         this.title.appendChild(node);
         this.title.style.marginTop = '5px';
         this.title.style.marginBottom = '5px';
