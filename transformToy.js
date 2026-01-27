@@ -23,9 +23,9 @@ function square(context, r = 20) {
     context.save();
     context.beginPath();
     context.moveTo(-r, -r);
-    context.lineTo(r, -r);
-    context.lineTo(r, r);
-    context.lineTo(-r, r);
+    context.lineTo( r, -r);
+    context.lineTo( r,  r);
+    context.lineTo(-r,  r);
     context.closePath();
     context.fill();
     context.restore();
@@ -197,6 +197,16 @@ function doTransform(context, transformList, param, direction = 1) {
             // because we use fill style, we don't need to show color
             // html += stylize(amt, `triangle(context,${t[1]},${t[2]},${t[3]});`, i);
             html += stylize(amt, `triangle(context,${t[1]},${t[2]});`, i);
+        } else if (command == "transform") {
+            // Lerp from identity matrix [1, 0, 0, 1, 0, 0] to target matrix
+            let a = amt * t[1] + (1 - amt) * 1;
+            let b = amt * t[2] + (1 - amt) * 0;
+            let c = amt * t[3] + (1 - amt) * 0;
+            let d = amt * t[4] + (1 - amt) * 1;
+            let e = amt * t[5] + (1 - amt) * 0;
+            let f = amt * t[6] + (1 - amt) * 0;
+            context.transform(a, b, c, d, e, f);
+            html += stylize(amt, `context.transform(${a.toFixed(2)},${b.toFixed(2)},${c.toFixed(2)},${d.toFixed(2)},${e.toFixed(2)},${f.toFixed(2)});`, i);
         } else if (command == "save") {
             if (amt > 0) {
                 transformStack.push(context.getTransform());
@@ -719,7 +729,7 @@ export function createExample(title, transforms = undefined) {
 
         // a dropdown menu used to select a command
         let select = makeSelect(["Please select one command", "translate", "scale", 
-        "rotate", "fillRect", "save", "restore"], customDiv);
+        "rotate", "fillRect", "transform", "save", "restore"], customDiv);
         select.id = canvasName + "-select";
         select.style.cssText = "margin-bottom: 5px; margin-top: 10px";
 
@@ -903,6 +913,20 @@ export function createExample(title, transforms = undefined) {
                 let sizeY = createSlider("sizeY: ", 0, 100, 0, 10);
                 sizeY.id = canvasName + "-sizeY";
                 customCommand = { name: "fillRect", sliders: [posX, posY, sizeX, sizeY] };
+            } else if (command == "transform") {
+                let a = createSlider("a: ", -3, 3, 1, 0.1);
+                a.id = canvasName + "-a";
+                let b = createSlider("b: ", -3, 3, 0, 0.1);
+                b.id = canvasName + "-b";
+                let c = createSlider("c: ", -3, 3, 0, 0.1);
+                c.id = canvasName + "-c";
+                let d = createSlider("d: ", -3, 3, 1, 0.1);
+                d.id = canvasName + "-d";
+                let e = createSlider("e: ", -50, 50, 0, 5);
+                e.id = canvasName + "-e";
+                let f = createSlider("f: ", -50, 50, 0, 5);
+                f.id = canvasName + "-f";
+                customCommand = { name: "transform", sliders: [a, b, c, d, e, f] };
             } else if (command == "save") {
                 customCommand = { name: "save"};
             } else if (command == "restore") {
