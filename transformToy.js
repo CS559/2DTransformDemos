@@ -716,237 +716,273 @@ export function createExample(title, transforms = undefined) {
         let title = document.createElement("p");
         title.id = canvasName + "-instruction";
         title.innerHTML = "Construct your own code segment of transformations <br>"
-        + "You can: <br>"
-        + "<b>Add</b> a command by selecting it from the dropbox<br>"
-        + "<b>Delete</b> the last command in your code segment <br>"
-        + "<b>Run</b> the code segement to animate the transformation <br>"
-        + "<b>Reset</b> all commands";
-        // let node = document.createTextNode("Construct your own code segment of transformations");
-        // title.appendChild(node);
+        + "Enter commands in the text editor below. Supported commands:<br>"
+        + "<b>translate(x, y)</b> - Move the coordinate system<br>"
+        + "<b>scale(x, y)</b> - Scale the coordinate system<br>"
+        + "<b>rotate(angle)</b> - Rotate by angle in degrees<br>"
+        + "<b>fillRect(x, y, width, height)</b> - Draw a rectangle<br>"
+        + "<b>transform(a, b, c, d, e, f)</b> - Apply transformation matrix<br>"
+        + "<b>save()</b> and <b>restore()</b> - Save/restore transformation state<br>"
+        + "Enter one command per line. Example: translate(10, 20)";
         title.style.marginTop = '0';
-        title.style.marginBottom = '0';
+        title.style.marginBottom = '10px';
         customDiv.appendChild(title);
 
-        // a dropdown menu used to select a command
-        let select = makeSelect(["Please select one command", "translate", "scale", 
-        "rotate", "fillRect", "transform", "save", "restore"], customDiv);
-        select.id = canvasName + "-select";
-        select.style.cssText = "margin-bottom: 5px; margin-top: 10px";
+        // Text area for entering commands
+        let textArea = document.createElement("textarea");
+        textArea.id = canvasName + "-textarea";
+        textArea.style.cssText = "width: 100%; height: 150px; font-family: 'Courier New', Courier, monospace; font-size: 14px; margin-bottom: 5px; padding: 5px; box-sizing: border-box;";
+        textArea.placeholder = "translate(10, 20)\nrotate(45)\nscale(1.5, 1.5)";
+        customDiv.appendChild(textArea);
 
-        // button to add the selected transform to the list
-        let addButton = document.createElement("button");
-        addButton.id = canvasName + "-addB";
-        addButton.innerHTML = "Add";
-        addButton.style.cssText = "margin-left: 7px";
-        customDiv.appendChild(addButton);
+        // Error message display
+        let errorDiv = document.createElement("div");
+        errorDiv.id = canvasName + "-error";
+        errorDiv.style.cssText = "color: red; font-weight: bold; margin-bottom: 5px; min-height: 20px; font-size: 14px;";
+        customDiv.appendChild(errorDiv);
 
-        // button to delete the last transform from the list
-        let deleteButton = document.createElement("button");
-        deleteButton.id = canvasName + "-deleteB";
-        deleteButton.innerHTML = "Delete";
-        deleteButton.style.cssText = "margin-left: 7px";
-        customDiv.appendChild(deleteButton);
+        // Button container
+        let buttonRow = document.createElement("div");
+        buttonRow.style.cssText = "margin-bottom: 10px;";
+        customDiv.appendChild(buttonRow);
 
         // button to run the program
         let runButton = document.createElement("button");
         runButton.id = canvasName + "-runB";
         runButton.innerHTML = "Run";
-        runButton.style.cssText = "margin-left: 7px";
-        customDiv.appendChild(runButton);
+        runButton.style.cssText = "margin-right: 7px;";
+        buttonRow.appendChild(runButton);
 
         // button to reset the program
         let resetButton = document.createElement("button");
         resetButton.id = canvasName + "-resetB";
         resetButton.innerHTML = "Reset";
-        resetButton.style.cssText = "margin-left: 7px";
-        customDiv.appendChild(resetButton);
+        resetButton.style.cssText = "margin-right: 7px;";
+        buttonRow.appendChild(resetButton);
+
+        // button to edit the commands
+        let editButton = document.createElement("button");
+        editButton.id = canvasName + "-editB";
+        editButton.innerHTML = "Edit";
+        editButton.style.cssText = "margin-right: 7px; display: none;";
+        buttonRow.appendChild(editButton);
 
         rightCodeDiv.style.paddingTop = "38px";
 
-        // prompt for parameters
-        let prompt = document.createElement("p");
-        prompt.id = canvasName + "-prompt";
-        prompt.innerHTML = "Set the parameters of your command";
-        prompt.style.cssText = "margin: 0";
-        customDiv.appendChild(prompt);
-
         // initially hide the panels
-        prompt.style.display = "none";
         leftPanel.style.display = "none";
         rightPanel.style.display = "none";
 
         let customTransformList = [];
-        let customCommand;
         let running;
-        let lastInnerHTML = [];
 
-        addButton.onclick = function () {
-            if (customCommand) {
-                let customTransform = [];
-                let parameters = "";
-                customTransform.push(customCommand.name);
-                // read the value of sliders
-                if (customCommand.sliders) {
-                    customCommand.sliders.forEach(
-                        /**
-                         * @param {HTMLDivElement} sd
-                         * @param {Number} i
-                         */
-                        function (sd, i) {
-                            let sdSlider = /** @type {HTMLInputElement} */ (sd.children[0]);
-                            customTransform.push(Number(sdSlider.value));
-                            parameters += (i ? "," : "") + sdSlider.value;
-                        }
-                    );
-                }
-                customTransformList.push(customTransform);
-                // console.log(customTransform);
-                lastInnerHTML.push(leftCodeDiv.innerHTML);
-                let htmlLine = "context." + customTransform[0] + "(" + parameters + ");";
-                leftCodeDiv.innerHTML += `<span class="c-one">${htmlLine}</span><br/>`;
+        /**
+         * Parse a command string into a transformation array
+         * @param {string} line
+         * @returns {{transform: Array, error: string|null}}
+         */
+        function parseCommand(line) {
+            line = line.trim();
+            if (!line) return { transform: null, error: null };
+
+            // Match command pattern: commandName(params)
+            let match = line.match(/^(\w+)\((.*)\)$/);
+            if (!match) {
+                return { transform: null, error: `Invalid syntax: "${line}". Expected format: command(params)` };
             }
-        };
 
-        deleteButton.onclick = function () {
-            if (customTransformList.length > 0) {
-                customTransformList.pop();
-                leftCodeDiv.innerHTML = lastInnerHTML.pop();
+            let command = match[1];
+            let paramsStr = match[2].trim();
+
+            // Parse parameters
+            let params = [];
+            if (paramsStr) {
+                let paramParts = paramsStr.split(',');
+                for (let p of paramParts) {
+                    let num = parseFloat(p.trim());
+                    if (isNaN(num)) {
+                        return { transform: null, error: `Invalid number: "${p.trim()}" in command: ${line}` };
+                    }
+                    params.push(num);
+                }
+            }
+
+            // Validate commands
+            if (command === "translate") {
+                if (params.length !== 2) {
+                    return { transform: null, error: `translate requires 2 parameters (x, y), got ${params.length}` };
+                }
+                return { transform: ["translate", params[0], params[1]], error: null };
+            } else if (command === "scale") {
+                if (params.length !== 2) {
+                    return { transform: null, error: `scale requires 2 parameters (x, y), got ${params.length}` };
+                }
+                return { transform: ["scale", params[0], params[1]], error: null };
+            } else if (command === "rotate") {
+                if (params.length !== 1) {
+                    return { transform: null, error: `rotate requires 1 parameter (angle), got ${params.length}` };
+                }
+                return { transform: ["rotate", params[0]], error: null };
+            } else if (command === "fillRect") {
+                if (params.length !== 4) {
+                    return { transform: null, error: `fillRect requires 4 parameters (x, y, width, height), got ${params.length}` };
+                }
+                return { transform: ["fillRect", params[0], params[1], params[2], params[3]], error: null };
+            } else if (command === "transform") {
+                if (params.length !== 6) {
+                    return { transform: null, error: `transform requires 6 parameters (a, b, c, d, e, f), got ${params.length}` };
+                }
+                return { transform: ["transform", params[0], params[1], params[2], params[3], params[4], params[5]], error: null };
+            } else if (command === "save") {
+                if (params.length !== 0) {
+                    return { transform: null, error: `save requires no parameters, got ${params.length}` };
+                }
+                return { transform: ["save"], error: null };
+            } else if (command === "restore") {
+                if (params.length !== 0) {
+                    return { transform: null, error: `restore requires no parameters, got ${params.length}` };
+                }
+                return { transform: ["restore"], error: null };
+            } else {
+                return { transform: null, error: `Unknown command: "${command}". Supported: translate, scale, rotate, fillRect, transform, save, restore` };
+            }
+        }
+
+        /**
+         * Parse all commands from textarea
+         * @returns {{transforms: Array, error: string|null}}
+         */
+        function parseAllCommands() {
+            let lines = textArea.value.split('\n');
+            let transforms = [];
+            
+            for (let i = 0; i < lines.length; i++) {
+                let line = lines[i].trim();
+                if (!line) continue; // Skip empty lines
+                
+                let result = parseCommand(line);
+                if (result.error) {
+                    return { transforms: [], error: `Line ${i + 1}: ${result.error}` };
+                }
+                if (result.transform) {
+                    transforms.push(result.transform);
+                }
+            }
+            
+            return { transforms: transforms, error: null };
+        }
+
+        // Real-time validation as user types
+        textArea.oninput = function () {
+            if (running) return; // Don't validate while running
+            
+            let result = parseAllCommands();
+            if (result.error) {
+                errorDiv.textContent = result.error;
+                errorDiv.style.color = "red";
+            } else if (result.transforms.length === 0) {
+                errorDiv.textContent = "";
+            } else {
+                errorDiv.textContent = `✓ ${result.transforms.length} valid command${result.transforms.length > 1 ? 's' : ''}`;
+                errorDiv.style.color = "green";
             }
         };
 
         runButton.onclick = function () {
-            // hide prompt
-            document.getElementById(canvasName + "-prompt").style.display = "none";
+            // Parse commands from textarea
+            let result = parseAllCommands();
+            
+            if (result.error) {
+                errorDiv.textContent = result.error;
+                errorDiv.style.color = "red";
+                return;
+            }
+            
+            if (result.transforms.length === 0) {
+                errorDiv.textContent = "No commands to run. Please enter at least one command.";
+                errorDiv.style.color = "red";
+                return;
+            }
 
-            // hide the sliders and reverse toggle
-            hideSliders(customCommand);
-            hideDirTog(customTransformList);
-            // reset the drop down menu
-            select.options[0].selected = true;
+            // Clear any previous error
+            errorDiv.textContent = "";
+            
             // in case the user keeps clicking run
             if (running) {
                 leftCodeDiv.innerHTML = "";
                 rightCodeDiv.innerHTML = "";
                 reset();
             }
-            // if there is a valid transforamtion list
-            if (customTransformList.length > 0) {
-                run(customTransformList);
-                buttonContainer.style.display = "block"; // show the buttons
-                leftPanel.style.display = "block"; // show the panels
-                rightPanel.style.display = "block";
-                // in case the user clicks add when an example is running
-                addButton.disabled = true;
-                deleteButton.disabled = true;
-                select.disabled = true;
-                running = true;
-                document.getElementById(canvasName + "-instruction").style.display = "none";
-            }
-            // console.log(customTransformList);
+            
+            customTransformList = result.transforms;
+            hideDirTog(customTransformList);
+            
+            // Run the transformations
+            run(customTransformList);
+            buttonContainer.style.display = "block"; // show the buttons
+            leftPanel.style.display = "block"; // show the panels
+            rightPanel.style.display = "block";
+            
+            // Hide the input elements and Run/Reset buttons while running
+            textArea.style.display = "none";
+            errorDiv.style.display = "none";
+            title.style.display = "none";
+            runButton.style.display = "none";
+            resetButton.style.display = "none";
+            editButton.style.display = "inline-block";
+            running = true;
+        };
+
+        editButton.onclick = function () {
+            // Show the input elements and Run/Reset buttons
+            title.style.display = "block";
+            textArea.style.display = "block";
+            errorDiv.style.display = "block";
+            runButton.style.display = "inline-block";
+            resetButton.style.display = "inline-block";
+            editButton.style.display = "none";
+            
+            // Hide the running elements
+            buttonContainer.style.display = "none";
+            leftPanel.style.display = "none";
+            rightPanel.style.display = "none";
+            leftCodeDiv.innerHTML = "";
+            rightCodeDiv.innerHTML = "";
+            
+            // Clear canvases
+            reset();
+            running = false;
         };
 
         resetButton.onclick = function () {
-            // reset the instructions
-            document.getElementById(canvasName + "-instruction").style.display = "block";
-            // reset the prompt
-            document.getElementById(canvasName + "-prompt").style.display = "none";
-            // reset the drop down menu
-            select.options[0].selected = true;
+            // show the input elements
+            title.style.display = "block";
+            textArea.style.display = "block";
+            errorDiv.style.display = "block";
+            runButton.style.display = "inline-block";
+            resetButton.style.display = "inline-block";
+            editButton.style.display = "none";
             // clear the code divisions
             leftCodeDiv.innerHTML = "";
             rightCodeDiv.innerHTML = "";
             document.getElementById(canvasName + "-play").style.display = "none";
             document.getElementById(canvasName + "-title").style.display = "none";
-            // hide the sliders if there are any
-            hideSliders(customCommand);
             buttonContainer.style.display = "none";
             leftPanel.style.display = "none";
             rightPanel.style.display = "none";
             // reset reverse toggle
             dirTog.checked = false;
-            // enable the button
-            addButton.disabled = false;
-            deleteButton.disabled = false;
-            select.disabled = false;
+            // reset textarea
+            textArea.disabled = false;
+            textArea.value = "";
+            errorDiv.textContent = "";
             // reset these if it is running
             if (running) {
                 reset();
                 running = false;
             }
-            // clear the transformation parameters
-            customCommand = undefined;
+            // clear the transformation list
             customTransformList = [];
-        };
-
-        select.onchange = function () {
-            let command = select.options[select.selectedIndex].text;
-            // hide the sliders if there are any
-            hideSliders(customCommand);
-            document.getElementById(canvasName + "-prompt").style.display = "block";
-
-            // create sliders and transformation command based on the selected option
-            if (command == "translate") {
-                // each slider corresponds to a parameter
-                let translateX = createSlider("translateX: ", -50, 50, 0, 5);
-                translateX.id = canvasName + "-tX";
-                let translateY = createSlider("translateY: ", -50, 50, 0, 5);
-                translateY.id = canvasName + "-tY";
-                // store the sliders to a custom command
-                customCommand = { name: "translate", sliders: [translateX, translateY] };
-            } else if (command == "scale") {
-                let scaleX = createSlider("scaleX: ", 0, 3, 1, 0.5);
-                scaleX.id = canvasName + "-sX";
-                let scaleY = createSlider("scaleY: ", 0, 3, 1, 0.5);
-                scaleY.id = canvasName + "-sY";
-                customCommand = { name: "scale", sliders: [scaleX, scaleY] };
-            } else if (command == "rotate") {
-                let rotate = createSlider("angle: ", -180, 180, 0, 5);
-                rotate.id = canvasName + "-rotate";
-                customCommand = { name: "rotate", sliders: [rotate] };
-            } else if (command == "fillRect") {
-                let posX = createSlider("posX: ", -50, 50, 0, 10);
-                posX.id = canvasName + "-pX";
-                let posY = createSlider("posY: ", -50, 50, 0, 10);
-                posY.id = canvasName + "-pY";
-                let sizeX = createSlider("sizeX: ", 0, 100, 0, 10);
-                sizeX.id = canvasName + "-sizeX";
-                let sizeY = createSlider("sizeY: ", 0, 100, 0, 10);
-                sizeY.id = canvasName + "-sizeY";
-                customCommand = { name: "fillRect", sliders: [posX, posY, sizeX, sizeY] };
-            } else if (command == "transform") {
-                let a = createSlider("a: ", -3, 3, 1, 0.1);
-                a.id = canvasName + "-a";
-                let b = createSlider("b: ", -3, 3, 0, 0.1);
-                b.id = canvasName + "-b";
-                let c = createSlider("c: ", -3, 3, 0, 0.1);
-                c.id = canvasName + "-c";
-                let d = createSlider("d: ", -3, 3, 1, 0.1);
-                d.id = canvasName + "-d";
-                let e = createSlider("e: ", -50, 50, 0, 5);
-                e.id = canvasName + "-e";
-                let f = createSlider("f: ", -50, 50, 0, 5);
-                f.id = canvasName + "-f";
-                customCommand = { name: "transform", sliders: [a, b, c, d, e, f] };
-            } else if (command == "save") {
-                customCommand = { name: "save"};
-            } else if (command == "restore") {
-                customCommand = { name: "restore"};
-            } else {
-                // bad transforamtion command
-                customCommand = undefined;
-            }
-            // if a valid command, show related input sliders
-            if (customCommand && customCommand.sliders) {
-                customCommand.sliders.forEach(
-                    /**
-                     * @param {HTMLDivElement} sd
-                     */
-                    function (sd) {
-                        customDiv.appendChild(sd);
-                        sd.style.display = "block";
-                    }
-                );
-            }
         };
     }
     return exampleDiv;
