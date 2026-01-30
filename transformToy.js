@@ -5,12 +5,23 @@
 // please read runCanvas.js for more details 
 import { RunCanvas } from "./Libs/runCanvas.js";
 
+// Constants
+const CANVAS_SIZE = 500;
+const CANVAS_SCALE = 2;
+const GRID_SIZE = 50;
+const GRID_LINE_WIDTH = 0.5;
+const AXIS_LINE_WIDTH = 3;
+const ARROW_SIZE = 6;
+const SQUARE_SIZE = 20;
+const SLIDER_WIDTH = 270;
+const ANIMATION_DURATION = 300; // milliseconds
+
 /**
  * Convert angles from degrees to radians
  * @param {Number} angle 
  */
 function degToRad(angle) {
-    return angle / 180 * Math.PI;
+    return (angle * Math.PI) / 180;
 }
 
 /**
@@ -19,13 +30,13 @@ function degToRad(angle) {
  * @param {CanvasRenderingContext2D} context 
  * @param {Number} r 
  */
-function square(context, r = 20) {
+function square(context, r = SQUARE_SIZE) {
     context.save();
     context.beginPath();
     context.moveTo(-r, -r);
-    context.lineTo( r, -r);
-    context.lineTo( r,  r);
-    context.lineTo(-r,  r);
+    context.lineTo(r, -r);
+    context.lineTo(r, r);
+    context.lineTo(-r, r);
     context.closePath();
     context.fill();
     context.restore();
@@ -40,48 +51,51 @@ function square(context, r = 20) {
 function drawCsys(context, color = "#7F0000", drawBlock = undefined) {
     context.save();
 
-    context.fillStyle = "#FFFFFF80"; // color + "10";
-    // draw the original block if asked
+    // Draw the original block if requested
     if (drawBlock) {
         context.fillStyle = drawBlock;
         square(context);
     }
+    
     context.strokeStyle = color;
-    // draw the horizontal and vertical lines
+    
+    // Draw grid lines
     context.beginPath();
-    for (let x = -5; x < 6; x += 1) {
-        context.moveTo(x * 10, -50);
-        context.lineTo(x * 10, 50);
-        context.moveTo(50, x * 10);
-        context.lineTo(-50, x * 10);
+    for (let i = -5; i <= 5; i++) {
+        const pos = i * 10;
+        // Vertical lines
+        context.moveTo(pos, -GRID_SIZE);
+        context.lineTo(pos, GRID_SIZE);
+        // Horizontal lines
+        context.moveTo(-GRID_SIZE, pos);
+        context.lineTo(GRID_SIZE, pos);
     }
-    context.lineWidth = 0.5;
+    context.lineWidth = GRID_LINE_WIDTH;
     context.stroke();
 
-    // draw the two axes in bold lines 
-    context.save();
-    context.lineWidth = 3;
+    // Draw axes in bold
+    context.lineWidth = AXIS_LINE_WIDTH;
     context.beginPath();
-    context.moveTo(0, -50);
-    context.lineTo(0, 50);
-    context.moveTo(-50, 0);
-    context.lineTo(50, 0);
+    context.moveTo(0, -GRID_SIZE);
+    context.lineTo(0, GRID_SIZE);
+    context.moveTo(-GRID_SIZE, 0);
+    context.lineTo(GRID_SIZE, 0);
     context.stroke();
-    context.restore();
 
-    // draw two arrows pointing the postive dir of axes
-    context.save();
+    // Draw arrows pointing in positive direction
     context.fillStyle = color;
-    context.moveTo(3, 50);
-    context.lineTo(0, 56);
-    context.lineTo(-3, 50);
+    context.beginPath();
+    // Y-axis arrow
+    context.moveTo(3, GRID_SIZE);
+    context.lineTo(0, GRID_SIZE + ARROW_SIZE);
+    context.lineTo(-3, GRID_SIZE);
     context.closePath();
-    context.moveTo(50, -3);
-    context.lineTo(56, 0);
-    context.lineTo(50, 3);
+    // X-axis arrow
+    context.moveTo(GRID_SIZE, -3);
+    context.lineTo(GRID_SIZE + ARROW_SIZE, 0);
+    context.lineTo(GRID_SIZE, 3);
     context.closePath();
     context.fill();
-    context.restore();
 
     context.restore();
 }
@@ -148,23 +162,23 @@ function doTransform(context, transformList, param, direction = 1) {
             return (`<span ${style}>${htmlLine}</span><br/>`);
         }
 
-        // translate, rotate, scale, fillRect, save or restore
-        if (command == "translate") {
-            let x = t[1] * amt;
-            let y = t[2] * amt;
+        // Process transformation commands
+        if (command === "translate") {
+            const x = t[1] * amt;
+            const y = t[2] * amt;
             context.translate(x, y);
             html += stylize(amt, `context.translate(${x.toFixed(1)},${y.toFixed(1)});`, i);
-        } else if (command == "rotate") {
-            let a = t[1] * amt;
-            context.rotate(degToRad(a));
-            html += stylize(amt, `context.rotate(${a.toFixed(1)});`, i);
-        } else if (command == "scale") {
-            let x = amt * t[1] + (1 - amt) * 1;
-            let y = amt * t[2] + (1 - amt) * 1;
+        } else if (command === "rotate") {
+            const angle = t[1] * amt;
+            context.rotate(degToRad(angle));
+            html += stylize(amt, `context.rotate(${angle.toFixed(1)});`, i);
+        } else if (command === "scale") {
+            const x = amt * t[1] + (1 - amt);
+            const y = amt * t[2] + (1 - amt);
             context.scale(x, y);
             html += stylize(amt, `context.scale(${x.toFixed(1)},${y.toFixed(1)});`, i);
-        } else if (command == "fillRect") {
-            let color = t.length > 5 ? t[5] : "blue";
+        } else if (command === "fillRect") {
+            const color = t.length > 5 ? t[5] : "blue";
             if (amt > 0) {
                 context.save();
                 context.fillStyle = color;
@@ -179,8 +193,8 @@ function doTransform(context, transformList, param, direction = 1) {
             }
             html += stylize(amt, `context.fillStyle="${color}"`, i);
             html += stylize(amt, `context.fillRect(${t[1]},${t[2]},${t[3]},${t[4]});`, i);
-        } else if (command == "triangle") {
-            let color = t.length > 3 ? t[3] : "blue";
+        } else if (command === "triangle") {
+            const color = t.length > 3 ? t[3] : "blue";
             if (amt > 0) {
                 context.save();
                 context.translate(t[1], t[2]);
@@ -194,31 +208,29 @@ function doTransform(context, transformList, param, direction = 1) {
                 context.restore();
             }
             html += stylize(amt, `context.fillStyle="${color}"`, i);
-            // because we use fill style, we don't need to show color
-            // html += stylize(amt, `triangle(context,${t[1]},${t[2]},${t[3]});`, i);
             html += stylize(amt, `triangle(context,${t[1]},${t[2]});`, i);
-        } else if (command == "transform") {
+        } else if (command === "transform") {
             // Lerp from identity matrix [1, 0, 0, 1, 0, 0] to target matrix
-            let a = amt * t[1] + (1 - amt) * 1;
-            let b = amt * t[2] + (1 - amt) * 0;
-            let c = amt * t[3] + (1 - amt) * 0;
-            let d = amt * t[4] + (1 - amt) * 1;
-            let e = amt * t[5] + (1 - amt) * 0;
-            let f = amt * t[6] + (1 - amt) * 0;
+            const a = amt * t[1] + (1 - amt);
+            const b = amt * t[2];
+            const c = amt * t[3];
+            const d = amt * t[4] + (1 - amt);
+            const e = amt * t[5];
+            const f = amt * t[6];
             context.transform(a, b, c, d, e, f);
             html += stylize(amt, `context.transform(${a.toFixed(2)},${b.toFixed(2)},${c.toFixed(2)},${d.toFixed(2)},${e.toFixed(2)},${f.toFixed(2)});`, i);
-        } else if (command == "save") {
+        } else if (command === "save") {
             if (amt > 0) {
                 transformStack.push(context.getTransform());
             }
             html += stylize(amt, `context.save();`, i);
-        } else if (command == "restore") {
+        } else if (command === "restore") {
             if (amt > 0 && transformStack.length) {
                 context.setTransform(transformStack.pop());
             }
             html += stylize(amt, `context.restore();`, i);
-        } else { // bad command
-            console.log(`Bad transform ${t}`);
+        } else {
+            console.log(`Unknown transform command: ${t}`);
         }
     });
     return html;
@@ -230,39 +242,34 @@ function doTransform(context, transformList, param, direction = 1) {
  * @param {any[][]} transformList 
  * @param {HTMLElement} div 
  * @param {HTMLInputElement} dirTog
+ * @param {HTMLInputElement} orTog
  * @param {HTMLInputElement} finalTog
  */
 function makeDraw(canvas, transformList, div, dirTog = undefined, orTog = undefined, finalTog = undefined) {
-    /**
-     * @param {HTMLCanvasElement} canvas
-     * @param {number} param
-     */
-    function draw(canvas, param) {
-        let context = canvas.getContext("2d");
+    return function draw(canvas, param) {
+        const context = canvas.getContext("2d");
         context.clearRect(0, 0, canvas.width, canvas.height);
 
         context.save();
-        // move to the center of the canvas
         context.translate(canvas.width / 2, canvas.height / 2);
-        context.scale(2, 2);
+        context.scale(CANVAS_SCALE, CANVAS_SCALE);
 
-        context.save();
-        // draw the original coor system if the toggle is checked
-        if (!(orTog && !orTog.checked)) {
+        // Draw original coordinate system if enabled
+        if (!orTog || orTog.checked) {
             drawCsys(context, "black");
         }
-        let html = doTransform(context, transformList, param, dirTog ? (dirTog.checked ? -1 : 1) : 1);
-        // draw the final coor system if the toggle is checked
-        if (!(finalTog && !finalTog.checked)) {
+        
+        const direction = dirTog?.checked ? -1 : 1;
+        const html = doTransform(context, transformList, param, direction);
+        
+        // Draw final coordinate system if enabled
+        if (!finalTog || finalTog.checked) {
             drawCsys(context);
         }
+        
         context.restore();
-
-        context.restore();
-
         div.innerHTML = html;
-    }
-    return draw;
+    };
 }
 
 /**
@@ -284,25 +291,25 @@ function insertAfter(el, referenceNode) {
  * @param {number} step
  */
 function createSlider(name, min, max, value, step) {
-    let sliderDiv = document.createElement("div");
+    const sliderDiv = document.createElement("div");
 
-    let slider = document.createElement("input");
-    slider.setAttribute("type", "range");
-    slider.style.width = String(270);
-    slider.setAttribute("min", String(min));
-    slider.setAttribute("max", String(max));
-    slider.setAttribute("value", String(value));
-    slider.setAttribute("step", String(step));
+    const slider = document.createElement("input");
+    slider.type = "range";
+    slider.style.width = `${SLIDER_WIDTH}px`;
+    slider.min = String(min);
+    slider.max = String(max);
+    slider.value = String(value);
+    slider.step = String(step);
     sliderDiv.appendChild(slider);
 
-    let sliderLabel = document.createElement("label");
-    sliderLabel.setAttribute("for", slider.id);
+    const sliderLabel = document.createElement("label");
+    sliderLabel.htmlFor = slider.id;
     sliderLabel.innerText = name + slider.value;
-    sliderLabel.style.cssText = "margin-left: 7px";
+    sliderLabel.style.marginLeft = "7px";
     sliderDiv.appendChild(sliderLabel);
 
-    slider.oninput = function () {
-        sliderLabel.innerText = name + String(slider.value);
+    slider.oninput = () => {
+        sliderLabel.innerText = name + slider.value;
     };
 
     return sliderDiv;
@@ -315,19 +322,19 @@ function createSlider(name, min, max, value, step) {
  * @param {string} [initial]
  */
 export function makeSelect(values, where, initial) {
-    let select = document.createElement("select");
-    values.forEach(function (ch) {
-        let opt = document.createElement("option");
+    const select = document.createElement("select");
+    values.forEach(ch => {
+        const opt = document.createElement("option");
         opt.value = ch;
         opt.text = ch;
         select.add(opt);
-        if (initial) select.value = initial;
     });
+    if (initial) {
+        select.value = initial;
+    }
     where.appendChild(select);
     return select;
 }
-
-
 
 /**
  * Create a transformation example
@@ -339,6 +346,10 @@ export function createExample(title, transforms = undefined) {
     const exampleCSS = "display: none; flex-wrap: wrap; align-items: flex-start; justify-content: center; margin: auto;";
     const codeCSS = "font-family: 'Courier New', Courier, monospace; " +
     "font-size: 120%; padding-top: 5px; padding-bottom: 20px";
+
+    // Get canvas size from URL parameter, default to CANVAS_SIZE constant
+    const urlParams = new URLSearchParams(window.location.search);
+    const canvasSize = parseInt(urlParams.get('canvasSize')) || CANVAS_SIZE;
 
     // make sure each canvas has a different name
     let canvasName = title;
@@ -362,8 +373,8 @@ export function createExample(title, transforms = undefined) {
     leftDiv.appendChild(leftHeader);
 
     let leftCanvas = document.createElement("canvas");
-    leftCanvas.width = 400;
-    leftCanvas.height = 400;
+    leftCanvas.width  = canvasSize;
+    leftCanvas.height = canvasSize;
     leftCanvas.id = canvasName;
     leftCanvas.style.cssText = "max-width: 100%; height: auto; display: block;";
     leftDiv.appendChild(leftCanvas);
@@ -431,7 +442,6 @@ export function createExample(title, transforms = undefined) {
     leftPanel.appendChild(resultLabel);
     
     // Check URL for showFinal parameter
-    const urlParams = new URLSearchParams(window.location.search);
     const showFinalParam = urlParams.get('showFinal');
     if (showFinalParam !== null) {
         resultTog.checked = showFinalParam === 'true';
@@ -459,8 +469,8 @@ export function createExample(title, transforms = undefined) {
     document.getElementById(rightDiv.id).appendChild(rightHeader);
 
     let rightCanvas = document.createElement("canvas");
-    rightCanvas.width = 400;
-    rightCanvas.height = 400;
+    rightCanvas.width = canvasSize;
+    rightCanvas.height = canvasSize;
     rightCanvas.id = canvasName + "-right";
     rightCanvas.style.cssText = "max-width: 100%; height: auto; display: block;";
     document.getElementById(rightDiv.id).appendChild(rightCanvas);
@@ -536,15 +546,14 @@ export function createExample(title, transforms = undefined) {
         let lastClickType = null;
 
         /**
-         * Animate slider to target value
+         * Animate slider to target value with easing
          * @param {number} targetValue
          * @param {string} clickType
          */
         function animateToValue(targetValue, clickType) {
-            // If animation is running and same button type clicked, update target
+            // If animation is running and same button clicked, update target
             if (animationFrameId !== null && clickType === lastClickType) {
                 currentTarget = targetValue;
-                startTime = Number(rc.range.value); // reset start time for smooth animation
                 return;
             }
 
@@ -552,23 +561,22 @@ export function createExample(title, transforms = undefined) {
                 cancelAnimationFrame(animationFrameId);
             }
 
-            currentTarget  = targetValue;
-            lastClickType  = clickType;
-            let startValue = Number(rc.range.value);
-            let startTime  = null;
-            let duration   = 300; // milliseconds
+            currentTarget = targetValue;
+            lastClickType = clickType;
+            const startValue = Number(rc.range.value);
+            let startTime = null;
 
             function animate(currentTime) {
                 if (startTime === null) startTime = currentTime;
-                let elapsed = currentTime - startTime;
-                let progress = Math.min(elapsed / duration, 1);
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / ANIMATION_DURATION, 1);
                 
                 // Ease in-out cubic
-                let easeProgress = progress < 0.5
+                const easeProgress = progress < 0.5
                     ? 4 * progress * progress * progress
                     : 1 - Math.pow(-2 * progress + 2, 3) / 2;
 
-                let currentValue = startValue + (currentTarget - startValue) * easeProgress;
+                const currentValue = startValue + (currentTarget - startValue) * easeProgress;
                 rc.setValue(currentValue);
                 md(leftCanvas, currentValue);
 
@@ -583,38 +591,30 @@ export function createExample(title, transforms = undefined) {
             animationFrameId = requestAnimationFrame(animate);
         }
 
-        dirTog.onchange = function () {
-            md(leftCanvas, Number(rc.range.value));
-        };
+        dirTog.onchange = () => md(leftCanvas, Number(rc.range.value));
 
         // Set up step button handlers with animation
-        firstButton.onclick = function () {
-            animateToValue(0, 'first');
-        };
+        firstButton.onclick = () => animateToValue(0, 'first');
 
-        prevButton.onclick = function () {
-            let currentValue = Number(rc.range.value);
-            let newValue = Math.max(0, Math.floor(currentValue));
-            // If we're already on an integer, go to the previous one
-            if (Math.abs(currentValue - Math.round(currentValue)) < 0.001) {
-                newValue = Math.max(0, currentValue - 1);
-            }
+        prevButton.onclick = () => {
+            const currentValue = Number(rc.range.value);
+            const isOnInteger = Math.abs(currentValue - Math.round(currentValue)) < 0.001;
+            const newValue = isOnInteger 
+                ? Math.max(0, currentValue - 1)
+                : Math.max(0, Math.floor(currentValue));
             animateToValue(newValue, 'prev');
         };
 
-        nextButton.onclick = function () {
-            let currentValue = Number(rc.range.value);
-            let newValue = Math.min(transformsToDo.length, Math.ceil(currentValue));
-            // If we're already on an integer, go to the next one
-            if (Math.abs(currentValue - Math.round(currentValue)) < 0.001) {
-                newValue = Math.min(transformsToDo.length, currentValue + 1);
-            }
+        nextButton.onclick = () => {
+            const currentValue = Number(rc.range.value);
+            const isOnInteger = Math.abs(currentValue - Math.round(currentValue)) < 0.001;
+            const newValue = isOnInteger
+                ? Math.min(transformsToDo.length, currentValue + 1)
+                : Math.min(transformsToDo.length, Math.ceil(currentValue));
             animateToValue(newValue, 'next');
         };
 
-        lastButton.onclick = function () {
-            animateToValue(transformsToDo.length, 'last');
-        };
+        lastButton.onclick = () => animateToValue(transformsToDo.length, 'last');
 
         // set up the right part if the checkbox is checked
         resultTog.onchange = function () {
