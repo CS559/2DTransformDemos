@@ -3,7 +3,7 @@
 
 // a premade function to construct a running canvas, 
 // please read runCanvas.js for more details 
-import { RunCanvas } from "./Libs/runCanvas.js";
+import { RunCanvas } from "/libs/CS559/runCanvas.js";
 
 /**
  * Convert angles from degrees to radians
